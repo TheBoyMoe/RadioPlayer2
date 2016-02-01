@@ -4,6 +4,8 @@ import android.content.Context;
 import android.util.Log;
 
 import com.example.radioplayer.R;
+import com.example.radioplayer.RadioPlayerApplication;
+import com.example.radioplayer.event.CategoryThreadCompletionEvent;
 import com.example.radioplayer.model.Category;
 import com.google.gson.Gson;
 
@@ -24,8 +26,8 @@ public class CategoryThread extends Thread{
 
     // download the list of primary categories
     // http://api.dirble.com/v2/categories/primary?token=xxxxxxxxxx-xxxxxxx
-
     private static final String BASE_URL = "http://api.dirble.com/v2/categories/primary?token=";
+    private static final String LOG_TAG = CategoryThread.class.getSimpleName();
     private Context mContext;
 
     public CategoryThread(String threadName, Context context) {
@@ -37,7 +39,7 @@ public class CategoryThread extends Thread{
 
     @Override
     public void run() {
-
+        Timber.i("Executing category thread");
         HttpURLConnection con = null;
 
         try {
@@ -50,8 +52,15 @@ public class CategoryThread extends Thread{
 
             // use gson to parse the json and instantiate the object collection
             Category[] array = new Gson().fromJson(reader, Category[].class);
-            List<Category> categories = new ArrayList<>(Arrays.asList(array));
-            Log.i("DEBUG", "Category list: " + categories);
+
+            if(array != null) {
+                List<Category> categories = new ArrayList<>(Arrays.asList(array));
+                RadioPlayerApplication.postToBus(new CategoryThreadCompletionEvent(categories));
+                Timber.i("Category list: %s", categories.toString());
+            } else {
+                Timber.i("No results received from remote server");
+                // TODO post message in order to display snackbar
+            }
 
             reader.close();
 
