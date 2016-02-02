@@ -14,19 +14,24 @@ import com.example.radioplayer.RadioPlayerApplication;
 import com.example.radioplayer.event.CategoryOnClickEvent;
 import com.example.radioplayer.event.DataModelUpdateEvent;
 import com.example.radioplayer.event.RefreshUIEvent;
+import com.example.radioplayer.fragment.CategoryDataFragment;
 import com.example.radioplayer.fragment.CategoryFragment;
-import com.example.radioplayer.fragment.ModelFragment;
+import com.example.radioplayer.fragment.StationDataFragment;
 import com.example.radioplayer.fragment.StationFragment;
-import com.example.radioplayer.model.Category;
 import com.squareup.otto.Subscribe;
+
+import timber.log.Timber;
 
 public class MainActivity extends AppCompatActivity {
 
-    private static final String MODEL_FRAGMENT_TAG = "model_fragment";
-
-    private ModelFragment mModelFragment;
+    private static final String CATEGORY_ID = "category_id";
+    private CategoryDataFragment mCategoryDataFragment;
     private CategoryFragment mCategoryFragment;
+    private StationDataFragment mStationDataFragment;
+    private StationFragment mStationFragment;
     private CoordinatorLayout mCoordinatorLayout;
+    //private Category mItem;
+    private Long mCategoryId;
     private boolean mDualPane;
 
 
@@ -39,15 +44,17 @@ public class MainActivity extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        mModelFragment =
-                (ModelFragment) getFragmentManager().findFragmentByTag(MODEL_FRAGMENT_TAG);
-        if(mModelFragment == null) {
-            mModelFragment = ModelFragment.newInstance();
+        // load the category data fragment - fragment retained on device rotation
+        mCategoryDataFragment =
+                (CategoryDataFragment) getFragmentManager().findFragmentByTag(CategoryDataFragment.CATEGORY_DATA_FRAGMENT_TAG);
+        if(mCategoryDataFragment == null) {
+            mCategoryDataFragment = CategoryDataFragment.newInstance();
             getFragmentManager().beginTransaction()
-                    .add(mModelFragment, MODEL_FRAGMENT_TAG)
+                    .add(mCategoryDataFragment, CategoryDataFragment.CATEGORY_DATA_FRAGMENT_TAG)
                     .commit();
         }
 
+        // load the category UI fragment
         mCategoryFragment =
                 (CategoryFragment) getFragmentManager().findFragmentById(R.id.category_fragment_container);
         if(mCategoryFragment == null) {
@@ -57,15 +64,106 @@ public class MainActivity extends AppCompatActivity {
                     .commit();
         }
 
-        // this call occurs before onCreate in ModelFragment (and thus thread) are called - list empty
-        if(mModelFragment != null && mCategoryFragment != null) {
-            mCategoryFragment.setModelData(mModelFragment.getModel());
+        // this call occurs before onCreate in CategoryDataFragment (and thus thread) are called - list empty
+        if(mCategoryDataFragment != null && mCategoryFragment != null) {
+            mCategoryFragment.setCategoryData(mCategoryDataFragment.getCategoryData());
         }
 
         // Check if the station list view exists
         View stationList = findViewById(R.id.station_fragment_container);
         mDualPane = stationList != null && stationList.getVisibility() == View.VISIBLE;
 
+        if(savedInstanceState != null) {
+            mCategoryId = savedInstanceState.getLong(CATEGORY_ID);
+        }
+
+        // instantiate the station UI and data fragments on tablet device on device rotation
+        if(mDualPane && savedInstanceState != null) {
+
+            // add the station UI fragment
+            mStationFragment = (StationFragment) getFragmentManager().findFragmentById(R.id.station_fragment_container);
+            if(mStationFragment == null) {
+                mStationFragment = StationFragment.newInstance();
+                getFragmentManager().beginTransaction()
+                        .add(R.id.station_fragment_container, mStationFragment)
+                        .commit();
+            }
+
+            // data fragment retained on device rotation
+            mStationDataFragment = (StationDataFragment) getFragmentManager().findFragmentByTag(StationDataFragment.STATION_DATA_FRAGMENT_TAG);
+
+            if(mStationFragment != null && mStationDataFragment != null) {
+                mStationFragment.setStationData(mStationDataFragment.getStationData());
+            }
+        }
+
+    }
+
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        if(mCategoryId != null)
+            outState.putLong(CATEGORY_ID, mCategoryId);
+    }
+
+
+    // impl Category list onListItemClick - fetch the position & object
+    @Subscribe
+    public void onCategoryClickEvent(CategoryOnClickEvent event) {
+        mCategoryId = mCategoryDataFragment.getCategoryDataItem(event.getPosition()).getId();
+
+        // on tablets load the station list fragment
+        if(mDualPane) {
+
+            // add the station UI fragment
+            mStationFragment = (StationFragment) getFragmentManager().findFragmentById(R.id.station_fragment_container);
+            if(mStationFragment == null) {
+                mStationFragment = StationFragment.newInstance();
+                getFragmentManager().beginTransaction()
+                        .add(R.id.station_fragment_container, mStationFragment)
+                        .commit();
+            }
+
+            // add station data fragment - replacing the previous one if it exists
+            mStationDataFragment = (StationDataFragment) getFragmentManager().findFragmentByTag(StationDataFragment.STATION_DATA_FRAGMENT_TAG);
+            if(mStationDataFragment != null) {
+                getFragmentManager().beginTransaction()
+                        .remove(mStationDataFragment)
+                        .commit();
+            }
+            mStationDataFragment = StationDataFragment.newInstance(mCategoryId);
+            getFragmentManager().beginTransaction()
+                    .add(mStationDataFragment, StationDataFragment.STATION_DATA_FRAGMENT_TAG)
+                    .commit();
+
+        } else {
+            // on phone launch the station activity
+            Intent intent = new Intent(this, StationActivity.class);
+            intent.putExtra(StationActivity.EXTRA_CATEGORY_ID, mCategoryId);
+            startActivity(intent);
+        }
+    }
+
+
+    // handle data model update events
+    @Subscribe
+    public void dataModelUpdate(DataModelUpdateEvent event) {
+        String update = event.getDataModel();
+        if(update.equals(DataModelUpdateEvent.CATEGORY_MODEL_DATA)) {
+            // fetch the data model from the model fragment and update category fragment's data model
+            if(mCategoryDataFragment != null && mCategoryFragment != null) {
+                mCategoryFragment.setCategoryData(mCategoryDataFragment.getCategoryData());
+                RadioPlayerApplication.postToBus(new RefreshUIEvent(RefreshUIEvent.REFRESH_CATEGORY_LIST_UI));
+            }
+        } else if(update.equals(DataModelUpdateEvent.STATION_MODEL_DATA)){
+
+            if(mStationFragment != null && mStationDataFragment != null) {
+                // pass data from data fragment to the ui fragment, post refresh notification
+                mStationFragment.setStationData(mStationDataFragment.getStationData());
+                RadioPlayerApplication.postToBus(new RefreshUIEvent(RefreshUIEvent.REFRESH_STATION_LIST_UI));
+            }
+        }
     }
 
 
@@ -79,35 +177,6 @@ public class MainActivity extends AppCompatActivity {
     protected void onPause() {
         super.onPause();
         RadioPlayerApplication.getInstance().getBus().unregister(this);
-    }
-
-    @Subscribe
-    public void hasCategoryDataModelBeenUpdated(DataModelUpdateEvent event) {
-        if(event.isDataModelUpdate()
-                && event.getDataModel().equals(DataModelUpdateEvent.CATEGORY_MODEL_DATA)) {
-            // fetch the data model from the model fragment and update category fragment's data model
-            if(mModelFragment != null && mCategoryFragment != null) {
-                mCategoryFragment.setModelData(mModelFragment.getModel());
-                RadioPlayerApplication.postToBus(new RefreshUIEvent(true));
-            }
-        }
-    }
-
-    // impl Category list onListItemClick - fetch the position & object
-    @Subscribe
-    public void onCategoryClickEvent(CategoryOnClickEvent event) {
-        Category item = mModelFragment.getDataModelItem(event.getPosition());
-        // on tablets load the station list fragment
-        if(mDualPane) {
-            getFragmentManager().beginTransaction()
-                    .replace(R.id.station_fragment_container, StationFragment.newInstance(item.getId()))
-                    .commit();
-        } else {
-            // on phone launch the station activity
-            Intent intent = new Intent(this, StationActivity.class);
-            intent.putExtra(StationActivity.CATEGORY_ID_EXTRA, item.getId());
-            startActivity(intent);
-        }
     }
 
     @Override

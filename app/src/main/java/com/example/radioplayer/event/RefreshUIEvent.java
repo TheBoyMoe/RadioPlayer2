@@ -2,14 +2,15 @@ package com.example.radioplayer.event;
 
 public class RefreshUIEvent extends BaseEvent{
 
-    private boolean mRefreshUI;
+    public static final String REFRESH_CATEGORY_LIST_UI = "refresh_category_ui";
+    public static final String REFRESH_STATION_LIST_UI = "refresh_station_ui";
+    private String mRefreshEvent;
 
-    public RefreshUIEvent(boolean refreshUI) {
-        mRefreshUI = refreshUI;
+    public RefreshUIEvent(String refreshEvent) {
+        mRefreshEvent = refreshEvent;
     }
 
-    public boolean isRefreshUI() {
-        return mRefreshUI;
+    public String getRefreshEvent() {
+        return mRefreshEvent;
     }
-
 }

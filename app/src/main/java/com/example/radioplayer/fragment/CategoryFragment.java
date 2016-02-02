@@ -33,16 +33,11 @@ public class CategoryFragment extends BaseFragment{
         return new CategoryFragment();
     }
 
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-
-    }
 
     // populate the fragments arraylist and notify the adapter
-    public void setModelData(ArrayList<Category> list) {
+    public void setCategoryData(ArrayList<Category> list) {
         mCategoryList.addAll(list);
-        Timber.i("Received data set from ModelFragment, size: %d", mCategoryList.size());
+        Timber.i("Received data set from CategoryDataFragment, size: %d", mCategoryList.size());
     }
 
     @Nullable
@@ -63,15 +58,17 @@ public class CategoryFragment extends BaseFragment{
     }
 
 
+    // handle data set changed event
     @Subscribe
     public void refreshUi(RefreshUIEvent event) {
-        if (event.isRefreshUI()) {
-            Timber.i("Category list: %s", mCategoryList.toString());
+        String refreshEvent = event.getRefreshEvent();
+        if (refreshEvent.equals(RefreshUIEvent.REFRESH_CATEGORY_LIST_UI)) {
             mAdapter.notifyDataSetChanged();
         }
     }
 
 
+    // Custom ArrayAdapter and ViewHolder
     private class CategoryArrayAdapter extends ArrayAdapter<Category> {
 
         public CategoryArrayAdapter(List<Category> list) {

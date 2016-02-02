@@ -19,15 +19,16 @@ import java.util.List;
 
 import timber.log.Timber;
 
-public class ModelFragment extends BaseFragment{
+public class CategoryDataFragment extends BaseFragment{
 
+    public static final String CATEGORY_DATA_FRAGMENT_TAG = "category_data_fragment";
     private List<Category> mCategoryList = new ArrayList<>();
     private boolean mIsStarted = false;
 
-    public ModelFragment() {}
+    public CategoryDataFragment() {}
 
-    public static ModelFragment newInstance() {
-        return new ModelFragment();
+    public static CategoryDataFragment newInstance() {
+        return new CategoryDataFragment();
     }
 
 
@@ -43,6 +44,7 @@ public class ModelFragment extends BaseFragment{
                 new CategoryThread("CategoryThread", getActivity()).start();
             }
         }
+        // TODO post a message to the user, not connected
     }
 
 
@@ -53,23 +55,23 @@ public class ModelFragment extends BaseFragment{
     }
 
     // return the data model set
-    public ArrayList<Category> getModel() {
+    public ArrayList<Category> getCategoryData() {
         return new ArrayList<>(mCategoryList);
     }
 
     // return an individual data item to the caller
-    public Category getDataModelItem(int position) {
+    public Category getCategoryDataItem(int position) {
         return mCategoryList.get(position);
     }
 
 
     @Subscribe
     public void getCategoryList(CategoryThreadCompletionEvent event) {
-        mCategoryList = event.getCategoryList();
-        Timber.i("Data set updated, size: %d", mCategoryList.size());
         mIsStarted = false; // thread complete
+        mCategoryList = event.getCategoryList();
+        Timber.i("Category data set updated, size: %d", mCategoryList.size());
         RadioPlayerApplication
-                .postToBus(new DataModelUpdateEvent(DataModelUpdateEvent.CATEGORY_MODEL_DATA, true));
+                .postToBus(new DataModelUpdateEvent(DataModelUpdateEvent.CATEGORY_MODEL_DATA));
     }
 
 }
