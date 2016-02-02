@@ -27,14 +27,12 @@ public class CategoryThread extends Thread{
     // download the list of primary categories
     // http://api.dirble.com/v2/categories/primary?token=xxxxxxxxxx-xxxxxxx
     private static final String BASE_URL = "http://api.dirble.com/v2/categories/primary?token=";
-    private static final String LOG_TAG = CategoryThread.class.getSimpleName();
     private Context mContext;
 
     public CategoryThread(String threadName, Context context) {
         super(threadName);
         mContext = context;
     }
-
 
 
     @Override
@@ -46,6 +44,7 @@ public class CategoryThread extends Thread{
             // connect to the remote server and download the stream
             String token = mContext.getResources().getString(R.string.dirble_api_key);
             URL url = new URL(BASE_URL + token);
+            Timber.i("Url: %s", url);
             con = (HttpURLConnection) url.openConnection();
             InputStream is = con.getInputStream();
             BufferedReader reader =  new BufferedReader(new InputStreamReader(is));
