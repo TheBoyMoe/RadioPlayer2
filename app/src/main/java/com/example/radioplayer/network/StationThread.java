@@ -5,6 +5,7 @@ import android.net.Uri;
 
 import com.example.radioplayer.R;
 import com.example.radioplayer.RadioPlayerApplication;
+import com.example.radioplayer.event.MessageEvent;
 import com.example.radioplayer.event.StationThreadCompletionEvent;
 import com.example.radioplayer.model.Station;
 import com.google.gson.Gson;
@@ -74,7 +75,8 @@ public class StationThread extends Thread{
                 RadioPlayerApplication.postToBus(new StationThreadCompletionEvent(stationList));
             } else {
                 Timber.i("No results received from remote server");
-                //TODO post message to bus - display snackbar
+                // post message to bus - display snackbar to user
+                RadioPlayerApplication.postToBus(new MessageEvent("No results received"));
             }
 
             reader.close();

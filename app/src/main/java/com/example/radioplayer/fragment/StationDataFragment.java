@@ -8,6 +8,7 @@ import android.view.ViewGroup;
 
 import com.example.radioplayer.RadioPlayerApplication;
 import com.example.radioplayer.event.DataModelUpdateEvent;
+import com.example.radioplayer.event.MessageEvent;
 import com.example.radioplayer.event.StationThreadCompletionEvent;
 import com.example.radioplayer.model.Station;
 import com.example.radioplayer.network.StationThread;
@@ -16,6 +17,8 @@ import com.squareup.otto.Subscribe;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import timber.log.Timber;
 
 /**
  * Headless fragment for maintaining station data between device rotation
@@ -55,11 +58,15 @@ public class StationDataFragment extends BaseFragment{
 
         mCategoryId = getArguments().getLong(BUNDLE_CATEGORY_ID);
         if(mCategoryId != null) {
-            if(Utils.isClientConnected(getActivity()) && !mIsStarted) {
-                mIsStarted = true;
-                // TODO pagination
-                // execute thread
-                new StationThread("StationThread", getActivity(), mCategoryId).start();
+            if(Utils.isClientConnected(getActivity())) {
+                if(!mIsStarted) {
+                    mIsStarted = true;
+                    // TODO pagination
+                    new StationThread("StationThread", getActivity(), mCategoryId).start();
+                }
+            } else {
+                Timber.i("Client not connected");
+                RadioPlayerApplication.postToBus(new MessageEvent("Not connected, check connection"));
             }
         }
     }
