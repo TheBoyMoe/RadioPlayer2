@@ -1,15 +1,20 @@
 package com.example.radioplayer.activity;
 
 import android.os.Bundle;
+import android.support.design.widget.CoordinatorLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 
 import com.example.radioplayer.R;
 import com.example.radioplayer.RadioPlayerApplication;
 import com.example.radioplayer.event.DataModelUpdateEvent;
+import com.example.radioplayer.event.MessageEvent;
+import com.example.radioplayer.event.OnClickEvent;
 import com.example.radioplayer.event.RefreshUIEvent;
 import com.example.radioplayer.fragment.StationDataFragment;
 import com.example.radioplayer.fragment.StationFragment;
+import com.example.radioplayer.model.Station;
+import com.example.radioplayer.util.Utils;
 import com.squareup.otto.Subscribe;
 
 public class StationActivity extends AppCompatActivity{
@@ -17,12 +22,13 @@ public class StationActivity extends AppCompatActivity{
     public static final String EXTRA_CATEGORY_ID = "category_id_extra";
     private StationDataFragment mStationDataFragment;
     private StationFragment mStationFragment;
-
+    private CoordinatorLayout mCoordinatorLayout;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main_station);
+        mCoordinatorLayout = (CoordinatorLayout) findViewById(R.id.coordinator_layout);
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -83,7 +89,24 @@ public class StationActivity extends AppCompatActivity{
         }
     }
 
-    // TODO handle station list on Click events
+    // handle station list on Click events
+    @Subscribe
+    public void getOnClickEvent(OnClickEvent event) {
+        if(event.getClickEvent().equals(OnClickEvent.STATION_ON_CLICK_EVENT)) {
+            if(mStationDataFragment != null) {
+                Station stn = mStationDataFragment.getStationDataItem(event.getPosition());
+                Utils.showSnackbar(mCoordinatorLayout, "Clicked on " + stn.getName());
+            }
+        }
+    }
+
+
+    // handle message events
+    @Subscribe
+    public void getMessageEvent(MessageEvent event) {
+        // FIXME event is posted before the class has had a chance to register
+        Utils.showSnackbar(mCoordinatorLayout, event.getMessage());
+    }
 
 
 

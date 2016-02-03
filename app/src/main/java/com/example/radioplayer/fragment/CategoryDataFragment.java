@@ -9,6 +9,7 @@ import android.view.ViewGroup;
 import com.example.radioplayer.RadioPlayerApplication;
 import com.example.radioplayer.event.CategoryThreadCompletionEvent;
 import com.example.radioplayer.event.DataModelUpdateEvent;
+import com.example.radioplayer.event.MessageEvent;
 import com.example.radioplayer.model.Category;
 import com.example.radioplayer.network.CategoryThread;
 import com.example.radioplayer.util.Utils;
@@ -43,8 +44,12 @@ public class CategoryDataFragment extends BaseFragment{
                 mIsStarted = true;
                 new CategoryThread("CategoryThread", getActivity()).start();
             }
+        } else {
+            // post a message to the user, not connected
+            Timber.i("Client not connected");
+            RadioPlayerApplication.postToBus(new MessageEvent("Not connected, check connection"));
         }
-        // TODO post a message to the user, not connected
+
     }
 
 

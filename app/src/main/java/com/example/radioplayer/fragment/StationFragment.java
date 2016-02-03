@@ -11,6 +11,8 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import com.example.radioplayer.R;
+import com.example.radioplayer.RadioPlayerApplication;
+import com.example.radioplayer.event.OnClickEvent;
 import com.example.radioplayer.event.RefreshUIEvent;
 import com.example.radioplayer.model.Station;
 import com.squareup.otto.Subscribe;
@@ -49,7 +51,7 @@ public class StationFragment extends BaseFragment{
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                // TODO post the event to the hosting activity - launch Player - pass in station obj
+                RadioPlayerApplication.postToBus(new OnClickEvent(OnClickEvent.STATION_ON_CLICK_EVENT, position));
             }
         });
 

@@ -1,11 +1,11 @@
 package com.example.radioplayer.network;
 
 import android.content.Context;
-import android.util.Log;
 
 import com.example.radioplayer.R;
 import com.example.radioplayer.RadioPlayerApplication;
 import com.example.radioplayer.event.CategoryThreadCompletionEvent;
+import com.example.radioplayer.event.MessageEvent;
 import com.example.radioplayer.model.Category;
 import com.google.gson.Gson;
 
@@ -58,7 +58,8 @@ public class CategoryThread extends Thread{
                 Timber.i("Category list: %s", categories.toString());
             } else {
                 Timber.i("No results received from remote server");
-                // TODO post message in order to display snackbar
+                // post message to bus - display snackbar to user
+                RadioPlayerApplication.postToBus(new MessageEvent("No results received"));
             }
 
             reader.close();

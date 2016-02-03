@@ -12,7 +12,7 @@ import android.widget.TextView;
 
 import com.example.radioplayer.R;
 import com.example.radioplayer.RadioPlayerApplication;
-import com.example.radioplayer.event.CategoryOnClickEvent;
+import com.example.radioplayer.event.OnClickEvent;
 import com.example.radioplayer.event.RefreshUIEvent;
 import com.example.radioplayer.model.Category;
 import com.squareup.otto.Subscribe;
@@ -51,7 +51,7 @@ public class CategoryFragment extends BaseFragment{
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 // post the click event up to the activity - post the position
-                RadioPlayerApplication.postToBus(new CategoryOnClickEvent(position));
+                RadioPlayerApplication.postToBus(new OnClickEvent(OnClickEvent.CATEGORY_ON_CLICK_EVENT, position));
             }
         });
         return listView;
