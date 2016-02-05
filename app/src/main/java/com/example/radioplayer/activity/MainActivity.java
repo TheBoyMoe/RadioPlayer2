@@ -109,10 +109,11 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-    // handle click events
+    // handle click events on both category and station items
     @Subscribe
     public void getOnClickEvent(OnClickEvent event) {
 
+        // deal with clicks to category items
         if(event.getClickEvent().equals(OnClickEvent.CATEGORY_ON_CLICK_EVENT)) {
             mCategoryId = mCategoryDataFragment.getCategoryDataItem(event.getPosition()).getId();
 
@@ -146,10 +147,16 @@ public class MainActivity extends AppCompatActivity {
                 intent.putExtra(StationActivity.EXTRA_CATEGORY_ID, mCategoryId);
                 startActivity(intent);
             }
-        } else if(event.getClickEvent().equals(OnClickEvent.STATION_ON_CLICK_EVENT)) {
+
+        }
+        // handle clicks to station items
+        else if(event.getClickEvent().equals(OnClickEvent.STATION_ON_CLICK_EVENT)) {
             if(mStationDataFragment != null) {
                 Station stn = mStationDataFragment.getStationDataItem(event.getPosition());
-                Utils.showSnackbar(mCoordinatorLayout, "clicked on station " + stn.getName());
+                // Utils.showSnackbar(mCoordinatorLayout, "clicked on station " + stn.getName());
+                Intent intent = new Intent(this, PlayerActivity.class);
+                intent.putExtra(PlayerActivity.EXTRA_STATION, stn);
+                startActivity(intent);
             }
         }
 

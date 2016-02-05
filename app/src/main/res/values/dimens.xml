@@ -11,5 +11,6 @@
     <dimen name="dimen_xlarge">48dp</dimen>
     <dimen name="dimen_xxlarge">64dp</dimen>
     <dimen name="dimen_divider">1dp</dimen>
+    <dimen name="fab_margin">16dp</dimen>
 
 </resources>

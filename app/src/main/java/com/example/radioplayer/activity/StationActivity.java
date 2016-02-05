@@ -1,5 +1,6 @@
 package com.example.radioplayer.activity;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.v7.app.AppCompatActivity;
@@ -94,8 +95,12 @@ public class StationActivity extends AppCompatActivity{
     public void getOnClickEvent(OnClickEvent event) {
         if(event.getClickEvent().equals(OnClickEvent.STATION_ON_CLICK_EVENT)) {
             if(mStationDataFragment != null) {
+                // FIXME need to send in the whole array so you can switch between stations
                 Station stn = mStationDataFragment.getStationDataItem(event.getPosition());
-                Utils.showSnackbar(mCoordinatorLayout, "Clicked on " + stn.getName());
+                //Utils.showSnackbar(mCoordinatorLayout, "Clicked on " + stn.getName());
+                Intent intent = new Intent(this, PlayerActivity.class);
+                intent.putExtra(PlayerActivity.EXTRA_STATION, stn);
+                startActivity(intent);
             }
         }
     }

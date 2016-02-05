@@ -2,4 +2,5 @@
     <string name="app_name">Radio Player</string>
     <string name="action_settings">Settings</string>
     <string name="dirble_api_key">18572bdfe9011ea4a2af1c56eb</string>
+    <string name="title_activity_player">PlayerActivity</string>
 </resources>

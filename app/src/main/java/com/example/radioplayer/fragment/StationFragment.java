@@ -43,7 +43,7 @@ public class StationFragment extends BaseFragment{
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-
+        // TODO pull to refresh
         // build the UI
         ListView listView = (ListView) inflater.inflate(R.layout.list_view, container, false);
         mAdapter = new StationArrayAdapter(mStationList);
