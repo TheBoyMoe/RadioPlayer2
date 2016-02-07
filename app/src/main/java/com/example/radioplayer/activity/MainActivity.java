@@ -19,7 +19,6 @@ import com.example.radioplayer.fragment.CategoryDataFragment;
 import com.example.radioplayer.fragment.CategoryFragment;
 import com.example.radioplayer.fragment.StationDataFragment;
 import com.example.radioplayer.fragment.StationFragment;
-import com.example.radioplayer.model.Station;
 import com.example.radioplayer.util.Utils;
 import com.squareup.otto.Subscribe;
 
@@ -152,10 +151,11 @@ public class MainActivity extends AppCompatActivity {
         // handle clicks to station items
         else if(event.getClickEvent().equals(OnClickEvent.STATION_ON_CLICK_EVENT)) {
             if(mStationDataFragment != null) {
-                Station stn = mStationDataFragment.getStationDataItem(event.getPosition());
-                // Utils.showSnackbar(mCoordinatorLayout, "clicked on station " + stn.getName());
+                // bundle the item position and station list/queue into the intent
+                int position = event.getPosition();
                 Intent intent = new Intent(this, PlayerActivity.class);
-                intent.putExtra(PlayerActivity.EXTRA_STATION, stn);
+                intent.putExtra(PlayerActivity.EXTRA_QUEUE_POSITION, position);
+                intent.putParcelableArrayListExtra(PlayerActivity.EXTRA_STATION_QUEUE, mStationDataFragment.getStationData());
                 startActivity(intent);
             }
         }

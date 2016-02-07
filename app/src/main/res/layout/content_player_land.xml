@@ -12,8 +12,11 @@
 
     <ProgressBar
         android:id="@+id/progress_bar"
-        android:layout_centerInParent="true"
+        android:layout_marginLeft="@dimen/progress_bar_left_margin"
+        android:layout_marginStart="@dimen/progress_bar_left_margin"
+        android:layout_marginBottom="@dimen/progress_bar_bottom_margin"
         android:visibility="gone"
+        android:layout_alignParentBottom="true"
         android:layout_width="@dimen/progress_bar_dimen"
         android:layout_height="@dimen/progress_bar_dimen"/>
 
@@ -21,7 +24,8 @@
     <RelativeLayout
         android:id="@+id/player_controls"
         android:layout_alignParentBottom="true"
-        android:layout_centerInParent="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
         android:layout_width="320dp"
         android:layout_height="wrap_content">
 
@@ -53,7 +57,6 @@
             android:layout_height="@dimen/player_button_dimen"/>
 
     </RelativeLayout>
-
 
 
 

@@ -3,7 +3,11 @@
           xmlns:android="http://schemas.android.com/apk/res/android">
 
     <uses-permission android:name="android.permission.INTERNET"/>
+    <!-- Check for network connectivity-->
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+    <!-- set the wake & wifi locks respectiviely-->
+    <uses-permission android:name="android.permission.WAKE_LOCK"/>
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE"/>
 
     <application
         android:name=".RadioPlayerApplication"
@@ -43,6 +47,24 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.example.radioplayer.activity.StationActivity"/>
         </activity>
+
+        <!-- Playback service-->
+        <service
+            android:name=".service.PlaybackService"
+            android:enabled="true"
+            android:exported="false">
+            <intent-filter>
+                <!-- receives intent in the service's onStartCommand() -->
+                <action android:name="android.intent.action.MEDIA_BUTTON"/>
+            </intent-filter>
+        </service>
+
+        <!-- MediaButtonReceiver - part of appcompat, broadcasts any headphone and bluetooth controls MediaButton actions -->
+        <receiver android:name="android.support.v4.media.session.MediaButtonReceiver">
+            <intent-filter>
+                <action android:name="android.intent.action.MEDIA_BUTTON"/>
+            </intent-filter>
+        </receiver>
 
     </application>
 

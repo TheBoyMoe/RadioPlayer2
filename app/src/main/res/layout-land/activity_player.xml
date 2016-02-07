@@ -23,7 +23,7 @@
 
     </android.support.design.widget.AppBarLayout>
 
-    <include layout="@layout/content_player"/>
+    <include layout="@layout/content_player_land"/>
 
 
 </android.support.design.widget.CoordinatorLayout>

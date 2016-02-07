@@ -57,18 +57,17 @@ public class StationDataFragment extends BaseFragment{
         setRetainInstance(true);
 
         mCategoryId = getArguments().getLong(BUNDLE_CATEGORY_ID);
-        if(mCategoryId != null) {
-            if(Utils.isClientConnected(getActivity())) {
-                if(!mIsStarted) {
-                    mIsStarted = true;
-                    // TODO pagination
-                    new StationThread("StationThread", getActivity(), mCategoryId).start();
-                }
-            } else {
-                Timber.i("Client not connected");
-                RadioPlayerApplication.postToBus(new MessageEvent("Not connected, check connection"));
+        if(Utils.isClientConnected(getActivity())) {
+            if(!mIsStarted) {
+                mIsStarted = true;
+                // TODO pagination
+                new StationThread("StationThread", getActivity(), mCategoryId).start();
             }
+        } else {
+            Timber.i("Client not connected");
+            RadioPlayerApplication.postToBus(new MessageEvent("Not connected, check connection"));
         }
+
     }
 
     @Nullable

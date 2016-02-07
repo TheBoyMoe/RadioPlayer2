@@ -14,7 +14,6 @@ import com.example.radioplayer.event.OnClickEvent;
 import com.example.radioplayer.event.RefreshUIEvent;
 import com.example.radioplayer.fragment.StationDataFragment;
 import com.example.radioplayer.fragment.StationFragment;
-import com.example.radioplayer.model.Station;
 import com.example.radioplayer.util.Utils;
 import com.squareup.otto.Subscribe;
 
@@ -95,11 +94,11 @@ public class StationActivity extends AppCompatActivity{
     public void getOnClickEvent(OnClickEvent event) {
         if(event.getClickEvent().equals(OnClickEvent.STATION_ON_CLICK_EVENT)) {
             if(mStationDataFragment != null) {
-                // FIXME need to send in the whole array so you can switch between stations
-                Station stn = mStationDataFragment.getStationDataItem(event.getPosition());
-                //Utils.showSnackbar(mCoordinatorLayout, "Clicked on " + stn.getName());
+                // FIXME bundle the item position and the list of stations into the intent
+                int position = event.getPosition();
                 Intent intent = new Intent(this, PlayerActivity.class);
-                intent.putExtra(PlayerActivity.EXTRA_STATION, stn);
+                intent.putExtra(PlayerActivity.EXTRA_QUEUE_POSITION, position);
+                intent.putParcelableArrayListExtra(PlayerActivity.EXTRA_STATION_QUEUE, mStationDataFragment.getStationData());
                 startActivity(intent);
             }
         }
