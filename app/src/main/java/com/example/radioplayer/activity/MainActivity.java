@@ -19,7 +19,6 @@ import com.example.radioplayer.fragment.CategoryDataFragment;
 import com.example.radioplayer.fragment.CategoryFragment;
 import com.example.radioplayer.fragment.StationDataFragment;
 import com.example.radioplayer.fragment.StationFragment;
-import com.example.radioplayer.model.Station;
 import com.example.radioplayer.util.Utils;
 import com.squareup.otto.Subscribe;
 
@@ -109,10 +108,11 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-    // handle click events
+    // handle click events on both category and station items
     @Subscribe
     public void getOnClickEvent(OnClickEvent event) {
 
+        // deal with clicks to category items
         if(event.getClickEvent().equals(OnClickEvent.CATEGORY_ON_CLICK_EVENT)) {
             mCategoryId = mCategoryDataFragment.getCategoryDataItem(event.getPosition()).getId();
 
@@ -146,10 +146,17 @@ public class MainActivity extends AppCompatActivity {
                 intent.putExtra(StationActivity.EXTRA_CATEGORY_ID, mCategoryId);
                 startActivity(intent);
             }
-        } else if(event.getClickEvent().equals(OnClickEvent.STATION_ON_CLICK_EVENT)) {
+
+        }
+        // handle clicks to station items
+        else if(event.getClickEvent().equals(OnClickEvent.STATION_ON_CLICK_EVENT)) {
             if(mStationDataFragment != null) {
-                Station stn = mStationDataFragment.getStationDataItem(event.getPosition());
-                Utils.showSnackbar(mCoordinatorLayout, "clicked on station " + stn.getName());
+                // bundle the item position and station list/queue into the intent
+                int position = event.getPosition();
+                Intent intent = new Intent(this, PlayerActivity.class);
+                intent.putExtra(PlayerActivity.EXTRA_QUEUE_POSITION, position);
+                intent.putParcelableArrayListExtra(PlayerActivity.EXTRA_STATION_QUEUE, mStationDataFragment.getStationData());
+                startActivity(intent);
             }
         }
 

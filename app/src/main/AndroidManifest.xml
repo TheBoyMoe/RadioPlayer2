@@ -3,18 +3,24 @@
           xmlns:android="http://schemas.android.com/apk/res/android">
 
     <uses-permission android:name="android.permission.INTERNET"/>
+    <!-- Check for network connectivity-->
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+    <!-- set the wake & wifi locks respectiviely-->
+    <uses-permission android:name="android.permission.WAKE_LOCK"/>
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE"/>
 
     <application
+        android:name=".RadioPlayerApplication"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
-        android:name=".RadioPlayerApplication"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
+
         <activity
             android:name=".activity.MainActivity"
             android:label="@string/app_name"
+            android:launchMode="singleTop"
             android:theme="@style/AppTheme.NoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
@@ -24,13 +30,42 @@
 
         <activity
             android:name=".activity.StationActivity"
-            android:theme="@style/AppTheme.NoActionBar"
-            android:parentActivityName=".activity.MainActivity">
+            android:parentActivityName=".activity.MainActivity"
+            android:launchMode="singleTop"
+            android:theme="@style/AppTheme.NoActionBar">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.example.radioplayer.activity.MainActivity"/>
-
         </activity>
+
+        <activity
+            android:name=".activity.PlayerActivity"
+            android:label="@string/title_activity_player"
+            android:parentActivityName=".activity.StationActivity"
+            android:theme="@style/AppTheme.NoActionBar">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.example.radioplayer.activity.StationActivity"/>
+        </activity>
+
+        <!-- Playback service-->
+        <service
+            android:name=".service.PlaybackService"
+            android:enabled="true"
+            android:exported="false">
+            <intent-filter>
+                <!-- receives intent in the service's onStartCommand() -->
+                <action android:name="android.intent.action.MEDIA_BUTTON"/>
+            </intent-filter>
+        </service>
+
+        <!-- MediaButtonReceiver - part of appcompat, broadcasts any headphone and bluetooth controls MediaButton actions -->
+        <receiver android:name="android.support.v4.media.session.MediaButtonReceiver">
+            <intent-filter>
+                <action android:name="android.intent.action.MEDIA_BUTTON"/>
+            </intent-filter>
+        </receiver>
+
     </application>
 
 </manifest>

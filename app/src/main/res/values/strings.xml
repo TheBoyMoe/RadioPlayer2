@@ -2,4 +2,9 @@
     <string name="app_name">Radio Player</string>
     <string name="action_settings">Settings</string>
     <string name="dirble_api_key">xxxxxx-xxxxxx-xxxxxx</string>
+    git
+    <string name="title_activity_player">PlayerActivity</string>
+    <string name="play_button_description">Play and stop the current selection</string>
+    <string name="previous_button_description">Skip to the previous radio station</string>
+    <string name="next_button_description">Skip to next radio station</string>
 </resources>

@@ -1,5 +1,8 @@
 package com.example.radioplayer.model;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
 import java.util.List;
 
 /**
@@ -140,7 +143,7 @@ import java.util.List;
 ]
 */
 
-public class Station {
+public class Station implements Parcelable {
 
     private Long id;
     private String name;
@@ -194,4 +197,46 @@ public class Station {
     }
 
 
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeValue(this.id);
+        dest.writeString(this.name);
+        dest.writeString(this.country);
+        dest.writeParcelable(this.image, 0);
+        dest.writeString(this.slug);
+        dest.writeString(this.website);
+        dest.writeString(this.twitter);
+        dest.writeString(this.facebook);
+        dest.writeTypedList(streams);
+    }
+
+    public Station() {
+    }
+
+    protected Station(Parcel in) {
+        this.id = (Long) in.readValue(Long.class.getClassLoader());
+        this.name = in.readString();
+        this.country = in.readString();
+        this.image = in.readParcelable(Image.class.getClassLoader());
+        this.slug = in.readString();
+        this.website = in.readString();
+        this.twitter = in.readString();
+        this.facebook = in.readString();
+        this.streams = in.createTypedArrayList(Stream.CREATOR);
+    }
+
+    public static final Parcelable.Creator<Station> CREATOR = new Parcelable.Creator<Station>() {
+        public Station createFromParcel(Parcel source) {
+            return new Station(source);
+        }
+
+        public Station[] newArray(int size) {
+            return new Station[size];
+        }
+    };
 }
