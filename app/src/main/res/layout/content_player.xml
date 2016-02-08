@@ -18,6 +18,7 @@
         android:layout_height="@dimen/progress_bar_dimen"/>
 
 
+
     <RelativeLayout
         android:id="@+id/player_controls"
         android:layout_alignParentBottom="true"
@@ -55,6 +56,14 @@
     </RelativeLayout>
 
 
-
+    <TextView
+        android:id="@+id/station_title"
+        android:singleLine="true"
+        android:textSize="18sp"
+        tools:text="Yellow Star of Texas"
+        android:layout_above="@id/player_controls"
+        android:layout_centerHorizontal="true"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"/>
 
 </RelativeLayout>

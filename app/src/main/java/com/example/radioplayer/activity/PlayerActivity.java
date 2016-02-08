@@ -16,6 +16,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ProgressBar;
+import android.widget.TextView;
 
 import com.example.radioplayer.R;
 import com.example.radioplayer.RadioPlayerApplication;
@@ -38,6 +39,7 @@ public class PlayerActivity extends AppCompatActivity implements
     public static final String EXTRA_QUEUE_POSITION = "queue_position";
     public static final String EXTRA_STATION_QUEUE = "station_queue"; // station list
 
+    private TextView mStationtitle;
     private ImageButton mPlayStopBtn;
     private ImageButton mNextBtn;
     private ImageButton mPrevBtn;
@@ -46,6 +48,8 @@ public class PlayerActivity extends AppCompatActivity implements
     private MediaControllerCompat mMediaController;
     private Station mStation;
     private boolean mFirstTimeIn = true;
+    private ArrayList<Station> mQueue;
+    private int mQueueItem;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -53,8 +57,7 @@ public class PlayerActivity extends AppCompatActivity implements
         setContentView(R.layout.activity_player);
         mCoordinatorLayout = (CoordinatorLayout) findViewById(R.id.coordinator_layout);
         mProgressBar = (ProgressBar) findViewById(R.id.progress_bar);
-
-        // TODO add TextView to display station name
+        mStationtitle = (TextView) findViewById(R.id.station_title);
 
         // set up the toolbar
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
@@ -72,9 +75,10 @@ public class PlayerActivity extends AppCompatActivity implements
 
 
         //Station stn = getIntent().getParcelableExtra(EXTRA_STATION);
-        int queueItem = getIntent().getIntExtra(EXTRA_QUEUE_POSITION, 0);
-        ArrayList<Station> queue = getIntent().getParcelableArrayListExtra(EXTRA_STATION_QUEUE);
-        mStation = queue.get(queueItem);;
+        mQueueItem = getIntent().getIntExtra(EXTRA_QUEUE_POSITION, 0);
+        mQueue = getIntent().getParcelableArrayListExtra(EXTRA_STATION_QUEUE);
+        mStation = mQueue.get(mQueueItem);
+        mStationtitle.setText(mStation.getName());
 
         // create the intent used to both start & bind to the service
         Intent intent = new Intent(this, PlaybackService.class);
@@ -93,6 +97,14 @@ public class PlayerActivity extends AppCompatActivity implements
             }
             if(state == PlaybackStateCompat.STATE_PLAYING)
                 mPlayStopBtn.setImageResource(R.drawable.action_stop);
+        }
+
+        // hide prev/next btns to prevent use if starting from the first or last station
+        if(mQueueItem == 0) {
+            mPrevBtn.setVisibility(View.GONE);
+        }
+        if(mQueueItem == mQueue.size() - 1) {
+            mNextBtn.setVisibility(View.GONE);
         }
 
     }
@@ -150,23 +162,33 @@ public class PlayerActivity extends AppCompatActivity implements
 
     @Override
     public void onClick(View view) {
+        int state = mMediaController.getPlaybackState().getState();
         switch(view.getId()) {
+
             case R.id.play_stop_button:
-                int state = mMediaController.getPlaybackState().getState();
                 if(state == PlaybackStateCompat.STATE_NONE || state == PlaybackStateCompat.STATE_STOPPED) {
                     // start playback
                     playFromStationUri();
-
                 } else if(state == PlaybackStateCompat.STATE_BUFFERING || state == PlaybackStateCompat.STATE_PLAYING){
                     // stop playback
                     mMediaController.getTransportControls().stop();
                 }
                 break;
+
             case R.id.previous_button:
-                // TODO skip to prev stn
+                if(state == PlaybackStateCompat.STATE_BUFFERING || state == PlaybackStateCompat.STATE_PLAYING) {
+                    mMediaController.getTransportControls().stop();
+                }
+                --mQueueItem;
+                updatePlayer();
                 break;
+
             case R.id.next_button:
-                // TODO skip to next stn
+                if(state == PlaybackStateCompat.STATE_BUFFERING || state == PlaybackStateCompat.STATE_PLAYING) {
+                    mMediaController.getTransportControls().stop();
+                }
+                ++mQueueItem;
+                updatePlayer();
                 break;
         }
     }
@@ -202,6 +224,35 @@ public class PlayerActivity extends AppCompatActivity implements
         }
     }
 
+
+    // TODO re-enable prev/next btns
+    private void updatePlayer() {
+        // ensure index not out of bounds
+        if(mQueueItem >=0 && mQueueItem < mQueue.size()) {
+            // TODO re-enable
+            mPrevBtn.setVisibility(View.VISIBLE);
+            mNextBtn.setVisibility(View.VISIBLE);
+            mStation = mQueue.get(mQueueItem);
+            mStationtitle.setText(mStation.getName());
+            playFromStationUri();
+
+            // update prev/next btns if req'd
+            if(mQueueItem == 0) {
+                mPrevBtn.setVisibility(View.GONE);
+            }
+            if(mQueueItem == mQueue.size() - 1) {
+                mNextBtn.setVisibility(View.GONE);
+            }
+        }
+//        else {
+//            // TODO disable
+//
+//            // disable the appropriate button
+//            Utils.showSnackbar(mCoordinatorLayout, "reached the end of the line");
+//        }
+    }
+
+
     private void playFromStationUri() {
         if(mStation != null) {
             Uri uri = Uri.parse(getStream(mStation));
@@ -209,6 +260,7 @@ public class PlayerActivity extends AppCompatActivity implements
                 Bundle extras = new Bundle();
                 extras.putParcelable(PlaybackService.EXTRA_STATION, mStation);
                 mMediaController.getTransportControls().playFromUri(uri, extras);
+                Timber.i("queue position: %d", mQueueItem);
 
                 // show the progress bar while buffering the audio stream
                 mProgressBar.setVisibility(View.VISIBLE);
