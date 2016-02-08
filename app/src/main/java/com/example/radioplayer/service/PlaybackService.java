@@ -37,7 +37,7 @@ public class PlaybackService extends Service implements
     private static final String LOG_TAG = "PlaybackService";
     public static final String EXTRA_STATION = "station";
     public static final String ACTION_PLAY = "play";
-    public static final String ACTION_STOP = "stop";
+    public static final String ACTION_STOP = "updateSession";
     public static final String ACTION_NEXT = "next";
     public static final String ACTION_PREV = "prev";
 
@@ -84,7 +84,7 @@ public class PlaybackService extends Service implements
                     mMediaController.getTransportControls().play();
                     break;
                 case ACTION_STOP:
-                    Timber.i("Calling stop");
+                    Timber.i("Calling updateSession");
                     mMediaController.getTransportControls().stop();
                     break;
                 case ACTION_NEXT:
@@ -155,13 +155,14 @@ public class PlaybackService extends Service implements
 
     @Override
     public void onAudioFocusChange(int focusChange) {
-        // if we've lost focus, stop playback
+        // if we've lost focus, updateSession playback
         if(focusChange == AudioManager.AUDIOFOCUS_LOSS ||
                 focusChange == AudioManager.AUDIOFOCUS_LOSS_TRANSIENT ||
                 focusChange == AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK) {
 
             Timber.i("Focus lost, stopping playback");
-            stop(PlaybackServiceEvent.ON_AUDIO_FOCUS_LOSS);
+            mMediaPlayer.stop();
+            updateSession(PlaybackStateCompat.STATE_STOPPED, PlaybackServiceEvent.ON_AUDIO_FOCUS_LOSS);
             updateNotification(); // FIXME ??
         }
     }
@@ -198,14 +199,16 @@ public class PlaybackService extends Service implements
     @Override
     public void onCompletion(MediaPlayer mp) {
         Timber.i("Playback has come to an end");
-        stop(PlaybackServiceEvent.ON_PLAYBACK_COMPLETION);
+        mMediaPlayer.reset();
+        updateSession(PlaybackStateCompat.STATE_NONE, PlaybackServiceEvent.ON_PLAYBACK_COMPLETION);
     }
 
 
     @Override
     public boolean onError(MediaPlayer mp, int what, int extra) {
-        Timber.e("An error has occurred, code: %d", what);
-        stop(PlaybackServiceEvent.ON_PLAYBACK_ERROR);
+        Timber.e("Media Player has encountered an error, code: %d", what);
+        mMediaPlayer.reset();
+        updateSession(PlaybackStateCompat.STATE_NONE, PlaybackServiceEvent.ON_PLAYBACK_ERROR);
         return true; // error handled
     }
 
@@ -270,9 +273,10 @@ public class PlaybackService extends Service implements
                     state == PlaybackStateCompat.STATE_BUFFERING) {
 
                 Timber.i("Stopping audio playback");
-                //mMediaPlayer.stop();
+                //mMediaPlayer.updateSession();
                 //mMediaSession.setPlaybackState(updatePlaybackState(PlaybackStateCompat.STATE_STOPPED));
-                stop(PlaybackServiceEvent.ON_STOP);
+                mMediaPlayer.stop();
+                updateSession(PlaybackStateCompat.STATE_STOPPED, PlaybackServiceEvent.ON_STOP);
                 updateNotification();
 
             }
@@ -302,7 +306,6 @@ public class PlaybackService extends Service implements
     ///// HELPER METHODS /////////////////////////////////////////////////////////////////////////
 
     private void initMediaPlayer() {
-
         Timber.i("Initializing media player");
         mMediaPlayer = new MediaPlayer();
         mMediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
@@ -310,21 +313,19 @@ public class PlaybackService extends Service implements
         mMediaPlayer.setOnPreparedListener(this);
         mMediaPlayer.setOnCompletionListener(this);
         mMediaPlayer.setOnErrorListener(this);
-
         // tell the system it needs to stay on
         mMediaPlayer.setWakeMode(getApplicationContext(), PowerManager.PARTIAL_WAKE_LOCK);
     }
 
 
-    private void stop(String event) {
-        mMediaPlayer.stop();
+    private void updateSession(int playbackState, String event) {
         mAudioManager.abandonAudioFocus(this);
         mMediaSession.setActive(false);
-        mPlaybackState = updatePlaybackState(PlaybackStateCompat.STATE_STOPPED);
+        mPlaybackState = updatePlaybackState(playbackState);
         mMediaSession.setPlaybackState(mPlaybackState);
-        //releaseMediaPlayer();
         RadioPlayerApplication.postToBus(new PlaybackServiceEvent(event));
     }
+
 
     private void releaseMediaPlayer() {
         if(mMediaPlayer != null) {
