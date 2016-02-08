@@ -34,6 +34,7 @@ public class PlayerActivity extends AppCompatActivity implements
         View.OnClickListener, ServiceConnection{
 
     //public static final String EXTRA_STATION = "station";
+    private static final String BUNDLE_STATE = "state";
     public static final String EXTRA_QUEUE_POSITION = "queue_position";
     public static final String EXTRA_STATION_QUEUE = "station_queue"; // station list
 
@@ -44,6 +45,7 @@ public class PlayerActivity extends AppCompatActivity implements
     private CoordinatorLayout mCoordinatorLayout;
     private MediaControllerCompat mMediaController;
     private Station mStation;
+    private boolean mFirstTimeIn = true;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -80,11 +82,27 @@ public class PlayerActivity extends AppCompatActivity implements
         Timber.i("Binding Playback Service");
         startService(intent);
 
+
         // set the progress bar and play stop btn on device rotation
         if(savedInstanceState != null) {
-
+            mFirstTimeIn = false;
+            int state = savedInstanceState.getInt(BUNDLE_STATE);
+            if(state == PlaybackStateCompat.STATE_BUFFERING) {
+                mPlayStopBtn.setImageResource(R.drawable.action_stop);
+                mProgressBar.setVisibility(View.VISIBLE);
+            }
+            if(state == PlaybackStateCompat.STATE_PLAYING)
+                mPlayStopBtn.setImageResource(R.drawable.action_stop);
         }
 
+    }
+
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        int state = mMediaController.getPlaybackState().getState();
+        outState.putInt(BUNDLE_STATE, state);
     }
 
     @Override
@@ -114,14 +132,15 @@ public class PlayerActivity extends AppCompatActivity implements
                 break;
             case PlaybackServiceEvent.ON_PLAYBACK_ERROR:
                 Utils.showSnackbar(mCoordinatorLayout, "An error has occurred, playback terminated");
+                mProgressBar.setVisibility(View.GONE);
                 break;
             case PlaybackServiceEvent.ON_AUDIO_FOCUS_LOSS:
                 // another app has audio focus - display message to user
                 Utils.showSnackbar(mCoordinatorLayout, "Another app has gained audio focus, playback terminated");
                 break;
             case PlaybackServiceEvent.ON_PLAYBACK_COMPLETION:
-                // reset play/stop image ???
                 Utils.showSnackbar(mCoordinatorLayout, "Playback has come to an end");
+                mProgressBar.setVisibility(View.GONE);
                 break;
             case PlaybackServiceEvent.ON_STOP:
                 // ??
@@ -134,27 +153,14 @@ public class PlayerActivity extends AppCompatActivity implements
         switch(view.getId()) {
             case R.id.play_stop_button:
                 int state = mMediaController.getPlaybackState().getState();
-                if(state == PlaybackStateCompat.STATE_NONE ||
-                        state == PlaybackStateCompat.STATE_STOPPED) {
-                    if(mStation != null) {
-                        Uri uri = Uri.parse(getStream(mStation));
-                        if (uri != null) {
-                            Bundle extras = new Bundle();
-                            extras.putParcelable(PlaybackService.EXTRA_STATION, mStation);
-                            mMediaController.getTransportControls().playFromUri(uri, extras);
+                if(state == PlaybackStateCompat.STATE_NONE || state == PlaybackStateCompat.STATE_STOPPED) {
+                    // start playback
+                    playFromStationUri();
 
-                            // show the progress bar while buffering the audio stream
-                            mProgressBar.setVisibility(View.VISIBLE);
-                        } else {
-                            Utils.showSnackbar(mCoordinatorLayout, "No stream found, try a different station");
-                        }
-                    }
-                    // TODO add buffering - stop
-                } else if(state == PlaybackStateCompat.STATE_BUFFERING ||
-                        state == PlaybackStateCompat.STATE_PLAYING){
+                } else if(state == PlaybackStateCompat.STATE_BUFFERING || state == PlaybackStateCompat.STATE_PLAYING){
+                    // stop playback
                     mMediaController.getTransportControls().stop();
                 }
-
                 break;
             case R.id.previous_button:
                 // TODO skip to prev stn
@@ -172,15 +178,43 @@ public class PlayerActivity extends AppCompatActivity implements
             try {
                 mMediaController = new MediaControllerCompat(this,
                         ((PlaybackService.ServiceBinder) service).getService().getMediaSessionToken());
-                int state = mMediaController.getPlaybackState().getState();
-                if(state == PlaybackStateCompat.STATE_PLAYING)
-                    mPlayStopBtn.setImageResource(R.drawable.action_stop);
+
+                if(mFirstTimeIn) { // stop restarting every time the device rotates
+                    // start playback as soon as player activity launches
+                    int state = mMediaController.getPlaybackState().getState();
+                    if(state == PlaybackStateCompat.STATE_NONE || state == PlaybackStateCompat.STATE_STOPPED) {
+
+                        playFromStationUri();
+
+                    } else if(state == PlaybackStateCompat.STATE_BUFFERING || state == PlaybackStateCompat.STATE_PLAYING){
+
+                        // if already playing, stop and start new stn selected
+                        mMediaController.getTransportControls().stop();
+                        playFromStationUri();
+                    }
+                }
 
             } catch (RemoteException e) {
                 Timber.e("Error instantiating the media controller: %s", e.getMessage());
             }
             mMediaController.registerCallback(mMediaControllerCallback);
             Timber.i("Connected to Playback Service");
+        }
+    }
+
+    private void playFromStationUri() {
+        if(mStation != null) {
+            Uri uri = Uri.parse(getStream(mStation));
+            if (uri != null) {
+                Bundle extras = new Bundle();
+                extras.putParcelable(PlaybackService.EXTRA_STATION, mStation);
+                mMediaController.getTransportControls().playFromUri(uri, extras);
+
+                // show the progress bar while buffering the audio stream
+                mProgressBar.setVisibility(View.VISIBLE);
+            } else {
+                Utils.showSnackbar(mCoordinatorLayout, "No stream found, try a different station");
+            }
         }
     }
 
