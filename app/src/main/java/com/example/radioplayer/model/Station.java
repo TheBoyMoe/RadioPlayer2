@@ -230,7 +230,7 @@ public class Station implements Parcelable {
         this.streams = in.createTypedArrayList(Stream.CREATOR);
     }
 
-    public static final Parcelable.Creator<Station> CREATOR = new Parcelable.Creator<Station>() {
+    public static final Creator<Station> CREATOR = new Creator<Station>() {
         public Station createFromParcel(Parcel source) {
             return new Station(source);
         }

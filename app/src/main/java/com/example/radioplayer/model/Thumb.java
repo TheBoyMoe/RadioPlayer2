@@ -29,7 +29,7 @@ public class Thumb implements Parcelable {
         this.url = in.readString();
     }
 
-    public static final Parcelable.Creator<Thumb> CREATOR = new Parcelable.Creator<Thumb>() {
+    public static final Creator<Thumb> CREATOR = new Creator<Thumb>() {
         public Thumb createFromParcel(Parcel source) {
             return new Thumb(source);
         }
@@ -38,5 +38,4 @@ public class Thumb implements Parcelable {
             return new Thumb[size];
         }
     };
-
 }

@@ -177,7 +177,9 @@ public class PlayerActivity extends AppCompatActivity implements
         switch(view.getId()) {
 
             case R.id.play_stop_button:
-                if(state == PlaybackStateCompat.STATE_NONE || state == PlaybackStateCompat.STATE_STOPPED) {
+                if(state == PlaybackStateCompat.STATE_NONE
+                        || state == PlaybackStateCompat.STATE_STOPPED) {
+
                     // start playback
                     Timber.i("Clicked play");
                     playFromStationUri();
@@ -268,14 +270,29 @@ public class PlayerActivity extends AppCompatActivity implements
 
     private void playFromStationUri() {
         if(mStation != null) {
+
+            String name = mStation.getName() != null? mStation.getName() : "";
+            String slug = mStation.getSlug() != null? mStation.getSlug() : "";
+            String country = mStation.getCountry() != null? mStation.getCountry() : "";
+            String imageUrl = mStation.getImage().getUrl() != null? mStation.getImage().getUrl() : "";
+            String thumbUrl = mStation.getImage().getThumb().getUrl() != null? mStation.getImage().getThumb().getUrl() : "";
             String url = getStream(mStation);
+
             if(url != null) {
                 Timber.i("Url: %s, station: %s", url, mStation.getName());
                 Uri uri = Uri.parse(url);
                 Bundle extras = new Bundle();
-                extras.putParcelable(PlaybackService.EXTRA_STATION, mStation);
-                mMediaController.getTransportControls().playFromUri(uri, extras);
-                Timber.i("Play from uri, queue position: %d", mQueuePosition);
+                //extras.putParcelable(PlaybackService.EXTRA_STATION, mStation); // PlaybackService can't unmarshall the station object
+                extras.putParcelable(PlaybackService.EXTRA_STATION_URI, uri);
+                extras.putString(PlaybackService.EXTRA_STATION_NAME, name);
+                extras.putString(PlaybackService.EXTRA_STATION_SLUG, slug);
+                extras.putString(PlaybackService.EXTRA_STATION_COUNTRY, country);
+                extras.putString(PlaybackService.EXTRA_STATION_IMAGE_URL, imageUrl);
+                extras.putString(PlaybackService.EXTRA_STATION_THUMB_URL, thumbUrl);
+
+                // playFromUri() works on emulators api 16-19, not on api 21+
+                //mMediaController.getTransportControls().playFromUri(uri, extras);
+                mMediaController.getTransportControls().playFromSearch("", extras);
 
                 // show the progress bar while buffering the audio stream
                 mProgressBar.setVisibility(View.VISIBLE);

@@ -35,7 +35,13 @@ public class PlaybackService extends Service implements
         AudioManager.OnAudioFocusChangeListener{
 
     private static final String LOG_TAG = "PlaybackService";
-    public static final String EXTRA_STATION = "station";
+    //public static final String EXTRA_STATION = "station";
+    public static final String EXTRA_STATION_URI = "station_uri";
+    public static final String EXTRA_STATION_NAME = "station_name";
+    public static final String EXTRA_STATION_SLUG = "station_slug";
+    public static final String EXTRA_STATION_COUNTRY = "station_country";
+    public static final String EXTRA_STATION_IMAGE_URL = "station_image_url";
+    public static final String EXTRA_STATION_THUMB_URL = "station_thumb_url";
     public static final String ACTION_PLAY = "play";
     public static final String ACTION_STOP = "updateSession";
     public static final String ACTION_NEXT = "next";
@@ -48,8 +54,8 @@ public class PlaybackService extends Service implements
     private MediaControllerCompat mMediaController;
     private MediaPlayer mMediaPlayer;
     private Binder mBinder = new ServiceBinder();
-    private int mCurrentQueueIndex = 0;
-    private List<Station> mPlayingQueue;
+    //private int mCurrentQueueIndex = 0;
+    //private List<Station> mPlayingQueue;
 
     public PlaybackService() {}
 
@@ -217,10 +223,16 @@ public class PlaybackService extends Service implements
 
         // impl media player methods you want your player to handle
         @Override
+        public void onPlayFromSearch(String query, Bundle extras) {
+            Uri uri = extras.getParcelable(EXTRA_STATION_URI);
+            onPlayFromUri(uri, extras);
+        }
+
+        @Override
         public void onPlayFromUri(Uri uri, Bundle extras) {
 
             Timber.i("onPlayFromUri called");
-            Station stn = extras.getParcelable(EXTRA_STATION);
+            // Station stn = extras.getParcelable(EXTRA_STATION);
 
             try {
                 switch (mPlaybackState.getState()) {
@@ -235,11 +247,11 @@ public class PlaybackService extends Service implements
                         mMediaSession.setPlaybackState(mPlaybackState);
                         // set the station metadata
                         mMediaSession.setMetadata(new MediaMetadataCompat.Builder()
-                                        .putString(MediaMetadataCompat.METADATA_KEY_DISPLAY_TITLE, stn.getName())
-                                        .putString(MediaMetadataCompat.METADATA_KEY_DISPLAY_SUBTITLE, stn.getSlug())
-                                        .putString(MediaMetadataCompat.METADATA_KEY_DISPLAY_DESCRIPTION, stn.getCountry())
-                                        .putString(MediaMetadataCompat.METADATA_KEY_ART_URI, stn.getImage().getUrl())
-                                        .putString(MediaMetadataCompat.METADATA_KEY_DISPLAY_ICON_URI, stn.getImage().getThumb().getUrl())
+                                        .putString(MediaMetadataCompat.METADATA_KEY_DISPLAY_TITLE, extras.getString(EXTRA_STATION_NAME))
+                                        .putString(MediaMetadataCompat.METADATA_KEY_DISPLAY_SUBTITLE, extras.getString(EXTRA_STATION_SLUG))
+                                        .putString(MediaMetadataCompat.METADATA_KEY_DISPLAY_DESCRIPTION, extras.getString(EXTRA_STATION_COUNTRY))
+                                        .putString(MediaMetadataCompat.METADATA_KEY_ART_URI, extras.getString(EXTRA_STATION_IMAGE_URL))
+                                        .putString(MediaMetadataCompat.METADATA_KEY_DISPLAY_ICON_URI, extras.getString(EXTRA_STATION_THUMB_URL))
                                         .build());
                         updateNotification();
                         // acquire wifi lock to prevent wifi going to sleep while playing
