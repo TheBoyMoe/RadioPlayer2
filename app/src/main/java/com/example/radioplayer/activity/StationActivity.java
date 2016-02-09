@@ -97,8 +97,8 @@ public class StationActivity extends AppCompatActivity{
                 // FIXME bundle the item position and the list of stations into the intent
                 int position = event.getPosition();
                 Intent intent = new Intent(this, PlayerActivity.class);
-                intent.putExtra(PlayerActivity.EXTRA_QUEUE_POSITION, position);
-                intent.putParcelableArrayListExtra(PlayerActivity.EXTRA_STATION_QUEUE, mStationDataFragment.getStationData());
+                intent.putExtra(PlayerActivity.BUNDLE_QUEUE_POSITION, position);
+                intent.putParcelableArrayListExtra(PlayerActivity.BUNDLE_STATION_QUEUE, mStationDataFragment.getStationData());
                 startActivity(intent);
             }
         }

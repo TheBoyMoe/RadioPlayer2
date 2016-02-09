@@ -219,6 +219,7 @@ public class PlaybackService extends Service implements
         @Override
         public void onPlayFromUri(Uri uri, Bundle extras) {
 
+            Timber.i("onPlayFromUri called");
             Station stn = extras.getParcelable(EXTRA_STATION);
 
             try {
@@ -245,7 +246,7 @@ public class PlaybackService extends Service implements
                         mWifiLock.acquire();
                         break;
 
-                    default:
+                    default: // FIXME ????
                         mMediaPlayer.stop();
                         Timber.i("CLICKED ON STOP!!!!!");
                         mPlaybackState = updatePlaybackState(PlaybackStateCompat.STATE_STOPPED);
@@ -286,7 +287,7 @@ public class PlaybackService extends Service implements
             }
         }
 
-        // TODO use queue length, impl currentQueueIndex
+
         @Override
         public void onSkipToNext() {
             super.onSkipToNext();
