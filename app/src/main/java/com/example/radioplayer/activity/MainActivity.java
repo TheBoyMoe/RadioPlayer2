@@ -154,8 +154,8 @@ public class MainActivity extends AppCompatActivity {
                 // bundle the item position and station list/queue into the intent
                 int position = event.getPosition();
                 Intent intent = new Intent(this, PlayerActivity.class);
-                intent.putExtra(PlayerActivity.EXTRA_QUEUE_POSITION, position);
-                intent.putParcelableArrayListExtra(PlayerActivity.EXTRA_STATION_QUEUE, mStationDataFragment.getStationData());
+                intent.putExtra(PlayerActivity.BUNDLE_QUEUE_POSITION, position);
+                intent.putParcelableArrayListExtra(PlayerActivity.BUNDLE_STATION_QUEUE, mStationDataFragment.getStationData());
                 startActivity(intent);
             }
         }

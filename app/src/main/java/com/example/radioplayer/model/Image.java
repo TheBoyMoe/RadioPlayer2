@@ -36,7 +36,7 @@ public class Image implements Parcelable {
         this.thumb = in.readParcelable(Thumb.class.getClassLoader());
     }
 
-    public static final Parcelable.Creator<Image> CREATOR = new Parcelable.Creator<Image>() {
+    public static final Creator<Image> CREATOR = new Creator<Image>() {
         public Image createFromParcel(Parcel source) {
             return new Image(source);
         }

@@ -56,7 +56,7 @@ public class Stream implements Parcelable {
         this.status = (Integer) in.readValue(Integer.class.getClassLoader());
     }
 
-    public static final Parcelable.Creator<Stream> CREATOR = new Parcelable.Creator<Stream>() {
+    public static final Creator<Stream> CREATOR = new Creator<Stream>() {
         public Stream createFromParcel(Parcel source) {
             return new Stream(source);
         }
