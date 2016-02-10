@@ -1,8 +1,10 @@
 package com.example.radioplayer.service;
 
 import android.app.Service;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.net.Uri;
@@ -22,6 +24,7 @@ import android.support.v4.media.session.PlaybackStateCompat;
 import com.example.radioplayer.RadioPlayerApplication;
 import com.example.radioplayer.event.PlaybackServiceEvent;
 import com.example.radioplayer.model.Station;
+import com.example.radioplayer.util.Utils;
 
 import java.io.IOException;
 import java.util.List;
@@ -56,6 +59,22 @@ public class PlaybackService extends Service implements
     private Binder mBinder = new ServiceBinder();
     //private int mCurrentQueueIndex = 0;
     //private List<Station> mPlayingQueue;
+
+    private final IntentFilter mNoisyIntentFilter =
+            new IntentFilter(AudioManager.ACTION_AUDIO_BECOMING_NOISY);
+
+    private final BroadcastReceiver mNoisyBroadcastReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if(AudioManager.ACTION_AUDIO_BECOMING_NOISY.equals(intent.getAction())) {
+                // stop playback
+                mMediaController.getTransportControls().stop();
+                Timber.i("Headphones removed");
+                RadioPlayerApplication.postToBus(new PlaybackServiceEvent(PlaybackServiceEvent.ON_BECOMING_NOISY));
+            }
+        }
+    };
+
 
     public PlaybackService() {}
 
@@ -180,13 +199,17 @@ public class PlaybackService extends Service implements
         // request audio focus
         int audioFocus = mAudioManager.requestAudioFocus(this, AudioManager.STREAM_MUSIC, AudioManager.AUDIOFOCUS_GAIN);
 
+        // register noisy broadcast receiver
+        registerReceiver(mNoisyBroadcastReceiver, mNoisyIntentFilter);
+
         // if we've gained focus, start playback
         if(audioFocus == AudioManager.AUDIOFOCUS_REQUEST_GRANTED) {
-            Timber.i("Gained focus, starting playback");
+            Timber.i("Gained audio focus, starting playback");
             mMediaPlayer.start();
 
             // let the system know this session handles media buttons
             mMediaSession.setActive(true);
+
 
             // update playback state
             mPlaybackState = updatePlaybackState(PlaybackStateCompat.STATE_PLAYING);
@@ -241,7 +264,7 @@ public class PlaybackService extends Service implements
                         Timber.i("MediaPlayer: %s", mMediaPlayer);
                         mMediaPlayer.reset();
                         mMediaPlayer.setDataSource(PlaybackService.this, uri);
-                        mMediaPlayer.prepareAsync();
+                        mMediaPlayer.prepareAsync(); // calls onPrepared() when complete
                         Timber.i("Buffering audio stream");
                         mPlaybackState = updatePlaybackState(PlaybackStateCompat.STATE_BUFFERING);
                         mMediaSession.setPlaybackState(mPlaybackState);
@@ -331,9 +354,12 @@ public class PlaybackService extends Service implements
     }
 
 
+    // abandon focus, set media btn target to false, unregister noisy receiver and update playback state
     private void updateSession(int playbackState, String event) {
         mAudioManager.abandonAudioFocus(this);
         mMediaSession.setActive(false);
+        unregisterReceiver(mNoisyBroadcastReceiver);
+
         mPlaybackState = updatePlaybackState(playbackState);
         mMediaSession.setPlaybackState(mPlaybackState);
         RadioPlayerApplication.postToBus(new PlaybackServiceEvent(event));
