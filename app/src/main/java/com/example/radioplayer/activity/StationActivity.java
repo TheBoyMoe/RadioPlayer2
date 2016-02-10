@@ -37,29 +37,29 @@ public class StationActivity extends AppCompatActivity{
 
         Long id = getIntent().getLongExtra(EXTRA_CATEGORY_ID, 0);
 
-        // load the data fragment
-        mStationDataFragment =
-                (StationDataFragment) getFragmentManager().findFragmentByTag(StationDataFragment.STATION_DATA_FRAGMENT_TAG);
-        if(mStationDataFragment == null) {
-            mStationDataFragment = StationDataFragment.newInstance(id);
-            getFragmentManager().beginTransaction()
-                    .add(mStationDataFragment, StationDataFragment.STATION_DATA_FRAGMENT_TAG)
-                    .commit();
-        }
+//        // load the data fragment
+//        mStationDataFragment =
+//                (StationDataFragment) getFragmentManager().findFragmentByTag(StationDataFragment.STATION_DATA_FRAGMENT_TAG);
+//        if(mStationDataFragment == null) {
+//            mStationDataFragment = StationDataFragment.newInstance(id);
+//            getFragmentManager().beginTransaction()
+//                    .add(mStationDataFragment, StationDataFragment.STATION_DATA_FRAGMENT_TAG)
+//                    .commit();
+//        }
 
         // load the UI fragment
         mStationFragment =
                 (StationFragment) getFragmentManager().findFragmentById(R.id.station_fragment_container);
         if(mStationFragment == null) {
-            mStationFragment = StationFragment.newInstance();
+            mStationFragment = StationFragment.newInstance(id);
             getFragmentManager().beginTransaction()
                     .add(R.id.station_fragment_container, mStationFragment)
                     .commit();
         }
 
-        if(mStationFragment != null && mStationDataFragment != null) {
-            mStationFragment.setStationData(mStationDataFragment.getStationData());
-        }
+//        if(mStationFragment != null && mStationDataFragment != null) {
+//            mStationFragment.setStationData(mStationDataFragment.getStationData());
+//        }
 
 
     }
@@ -77,30 +77,29 @@ public class StationActivity extends AppCompatActivity{
     }
 
     // handle data model update events
-    @Subscribe
-    public void dataModelUpdate(DataModelUpdateEvent event) {
-        String update = event.getDataModel();
-        if(update.equals(DataModelUpdateEvent.STATION_MODEL_DATA)) {
-            // update the station list and post refresh event
-            if(mStationFragment != null && mStationDataFragment != null) {
-                mStationFragment.setStationData(mStationDataFragment.getStationData());
-                RadioPlayerApplication.postToBus(new RefreshUIEvent(RefreshUIEvent.REFRESH_STATION_LIST_UI));
-            }
-        }
-    }
+//    @Subscribe
+//    public void dataModelUpdate(DataModelUpdateEvent event) {
+//        String update = event.getDataModel();
+//        if(update.equals(DataModelUpdateEvent.STATION_MODEL_DATA)) {
+//            // update the station list and post refresh event
+//            if(mStationFragment != null && mStationDataFragment != null) {
+//                mStationFragment.setStationData(mStationDataFragment.getStationData());
+//                RadioPlayerApplication.postToBus(new RefreshUIEvent(RefreshUIEvent.REFRESH_STATION_LIST_UI));
+//            }
+//        }
+//    }
 
-    // handle station list on Click events
+    // TODO handle station list on Click events
     @Subscribe
     public void getOnClickEvent(OnClickEvent event) {
         if(event.getClickEvent().equals(OnClickEvent.STATION_ON_CLICK_EVENT)) {
-            if(mStationDataFragment != null) {
-                // FIXME bundle the item position and the list of stations into the intent
+//            if(mStationDataFragment != null) {
                 int position = event.getPosition();
                 Intent intent = new Intent(this, PlayerActivity.class);
                 intent.putExtra(PlayerActivity.BUNDLE_QUEUE_POSITION, position);
-                intent.putParcelableArrayListExtra(PlayerActivity.BUNDLE_STATION_QUEUE, mStationDataFragment.getStationData());
+                //intent.putParcelableArrayListExtra(PlayerActivity.BUNDLE_STATION_QUEUE, mStationDataFragment.getStationData());
                 startActivity(intent);
-            }
+//            }
         }
     }
 

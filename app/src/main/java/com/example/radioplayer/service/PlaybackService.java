@@ -338,6 +338,7 @@ public class PlaybackService extends Service implements
     private void updateSession(int playbackState, String event) {
         mAudioManager.abandonAudioFocus(this);
         mMediaSession.setActive(false);
+        // TODO needs to be moved
         unregisterReceiver(mNoisyBroadcastReceiver);
 
         mPlaybackState = updatePlaybackState(playbackState);

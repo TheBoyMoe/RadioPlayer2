@@ -83,18 +83,18 @@ public class MainActivity extends AppCompatActivity {
             // add the station UI fragment
             mStationFragment = (StationFragment) getFragmentManager().findFragmentById(R.id.station_fragment_container);
             if(mStationFragment == null) {
-                mStationFragment = StationFragment.newInstance();
+                mStationFragment = StationFragment.newInstance(mCategoryId);
                 getFragmentManager().beginTransaction()
                         .add(R.id.station_fragment_container, mStationFragment)
                         .commit();
             }
 
             // data fragment retained on device rotation
-            mStationDataFragment = (StationDataFragment) getFragmentManager().findFragmentByTag(StationDataFragment.STATION_DATA_FRAGMENT_TAG);
+            //mStationDataFragment = (StationDataFragment) getFragmentManager().findFragmentByTag(StationDataFragment.STATION_DATA_FRAGMENT_TAG);
 
-            if(mStationFragment != null && mStationDataFragment != null) {
-                mStationFragment.setStationData(mStationDataFragment.getStationData());
-            }
+//            if(mStationFragment != null && mStationDataFragment != null) {
+//                mStationFragment.setStationData(mStationDataFragment.getStationData());
+//            }
         }
 
     }
@@ -118,27 +118,35 @@ public class MainActivity extends AppCompatActivity {
 
             // on tablets load the station list fragment
             if(mDualPane) {
+                // add the fragment if it does not already exist, otherwise replace it.
+                mStationFragment = StationFragment.newInstance(mCategoryId);
+                getFragmentManager().beginTransaction()
+                        .replace(R.id.station_fragment_container, mStationFragment)
+                        .commit();
 
                 // add the station UI fragment
-                mStationFragment = (StationFragment) getFragmentManager().findFragmentById(R.id.station_fragment_container);
-                if(mStationFragment == null) {
-                    mStationFragment = StationFragment.newInstance();
-                    getFragmentManager().beginTransaction()
-                            .add(R.id.station_fragment_container, mStationFragment)
-                            .commit();
-                }
+//                mStationFragment = (StationFragment) getFragmentManager().findFragmentById(R.id.station_fragment_container);
+//                if(mStationFragment == null) {
+//                    mStationFragment = StationFragment.newInstance(mCategoryId);
+//                    getFragmentManager().beginTransaction()
+//                            .add(R.id.station_fragment_container, mStationFragment)
+//                            .commit();
+//                } else {
+//                    // replace the current fragment
+//
+//                }
 
                 // add station data fragment - replacing the previous one if it exists
-                mStationDataFragment = (StationDataFragment) getFragmentManager().findFragmentByTag(StationDataFragment.STATION_DATA_FRAGMENT_TAG);
-                if(mStationDataFragment != null) {
-                    getFragmentManager().beginTransaction()
-                            .remove(mStationDataFragment)
-                            .commit();
-                }
-                mStationDataFragment = StationDataFragment.newInstance(mCategoryId);
-                getFragmentManager().beginTransaction()
-                        .add(mStationDataFragment, StationDataFragment.STATION_DATA_FRAGMENT_TAG)
-                        .commit();
+//                mStationDataFragment = (StationDataFragment) getFragmentManager().findFragmentByTag(StationDataFragment.STATION_DATA_FRAGMENT_TAG);
+//                if(mStationDataFragment != null) {
+//                    getFragmentManager().beginTransaction()
+//                            .remove(mStationDataFragment)
+//                            .commit();
+//                }
+//                mStationDataFragment = StationDataFragment.newInstance(mCategoryId);
+//                getFragmentManager().beginTransaction()
+//                        .add(mStationDataFragment, StationDataFragment.STATION_DATA_FRAGMENT_TAG)
+//                        .commit();
 
             } else {
                 // on phone launch the station activity
@@ -150,14 +158,14 @@ public class MainActivity extends AppCompatActivity {
         }
         // handle clicks to station items
         else if(event.getClickEvent().equals(OnClickEvent.STATION_ON_CLICK_EVENT)) {
-            if(mStationDataFragment != null) {
+            //if(mStationDataFragment != null) {
                 // bundle the item position and station list/queue into the intent
                 int position = event.getPosition();
                 Intent intent = new Intent(this, PlayerActivity.class);
                 intent.putExtra(PlayerActivity.BUNDLE_QUEUE_POSITION, position);
-                intent.putParcelableArrayListExtra(PlayerActivity.BUNDLE_STATION_QUEUE, mStationDataFragment.getStationData());
+                //intent.putParcelableArrayListExtra(PlayerActivity.BUNDLE_STATION_QUEUE, mStationDataFragment.getStationData());
                 startActivity(intent);
-            }
+            //}
         }
 
     }
@@ -171,23 +179,26 @@ public class MainActivity extends AppCompatActivity {
             // fetch the data model from the model fragment and update category fragment's data model
             if(mCategoryDataFragment != null && mCategoryFragment != null) {
                 mCategoryFragment.setCategoryData(mCategoryDataFragment.getCategoryData());
-                RadioPlayerApplication.postToBus(new RefreshUIEvent(RefreshUIEvent.REFRESH_CATEGORY_LIST_UI));
-            }
-        } else if(update.equals(DataModelUpdateEvent.STATION_MODEL_DATA)){
-
-            if(mStationFragment != null && mStationDataFragment != null) {
-                // pass data from data fragment to the ui fragment, post refresh notification
-                mStationFragment.setStationData(mStationDataFragment.getStationData());
-                RadioPlayerApplication.postToBus(new RefreshUIEvent(RefreshUIEvent.REFRESH_STATION_LIST_UI));
+                //RadioPlayerApplication.postToBus(new RefreshUIEvent(RefreshUIEvent.REFRESH_CATEGORY_LIST_UI));
             }
         }
+
+//        else if(update.equals(DataModelUpdateEvent.STATION_MODEL_DATA)){
+//
+//            if(mStationFragment != null && mStationDataFragment != null) {
+//                // pass data from data fragment to the ui fragment, post refresh notification
+//                mStationFragment.setStationData(mStationDataFragment.getStationData());
+//                RadioPlayerApplication.postToBus(new RefreshUIEvent(RefreshUIEvent.REFRESH_STATION_LIST_UI));
+//            }
+//        }
+
     }
 
 
     // handle message events
     @Subscribe
     public void getMessageEvent(MessageEvent event) {
-        // FIXME event is posted before the class has had a chance to register
+        // FIXME??? event is posted before the class has had a chance to register
         Utils.showSnackbar(mCoordinatorLayout, event.getMessage());
     }
 

@@ -80,8 +80,9 @@ public class StationDataFragment extends BaseFragment{
     // fetch station list when thread complete
     @Subscribe
     public void getStationList(StationThreadCompletionEvent event) {
+
         mIsStarted = false; // thread complete
-        mStationList = event.getStationList();
+        // mStationList = event.getStationList();
         // let the hosting activity know the data model has been updated
         RadioPlayerApplication.postToBus(new DataModelUpdateEvent(DataModelUpdateEvent.STATION_MODEL_DATA));
     }

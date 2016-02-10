@@ -5,6 +5,7 @@ import android.net.Uri;
 
 import com.example.radioplayer.R;
 import com.example.radioplayer.RadioPlayerApplication;
+import com.example.radioplayer.data.StationDataCache;
 import com.example.radioplayer.event.MessageEvent;
 import com.example.radioplayer.event.StationThreadCompletionEvent;
 import com.example.radioplayer.model.Station;
@@ -17,6 +18,7 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -71,12 +73,17 @@ public class StationThread extends Thread{
             if(data != null) {
                 List<Station> stationList = Arrays.asList(data);
                 Timber.i("Station list: %s", stationList.toString());
-                // post thread completion to the bus
-                RadioPlayerApplication.postToBus(new StationThreadCompletionEvent(stationList));
+
+                // stash the station list in the data cache
+                StationDataCache.getStationDataCache().setStationList(new ArrayList<>(stationList));
+                // let the station fragment know the station list has been updated
+                RadioPlayerApplication.postToBus(new StationThreadCompletionEvent(true));
+
+                //RadioPlayerApplication.postToBus(new StationThreadCompletionEvent(stationList));
             } else {
                 Timber.i("No results received from remote server");
                 // post message to bus - display snackbar to user
-                RadioPlayerApplication.postToBus(new MessageEvent("No results received"));
+                RadioPlayerApplication.postToBus(new MessageEvent("No results available"));
             }
 
             reader.close();

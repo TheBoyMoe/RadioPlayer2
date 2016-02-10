@@ -23,6 +23,7 @@ import android.widget.TextView;
 
 import com.example.radioplayer.R;
 import com.example.radioplayer.RadioPlayerApplication;
+import com.example.radioplayer.data.StationDataCache;
 import com.example.radioplayer.event.PlaybackServiceEvent;
 import com.example.radioplayer.model.Station;
 import com.example.radioplayer.model.Stream;
@@ -31,6 +32,7 @@ import com.example.radioplayer.util.Utils;
 import com.squareup.otto.Subscribe;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import timber.log.Timber;
 
@@ -54,7 +56,7 @@ public class PlayerActivity extends AppCompatActivity implements
     private MediaControllerCompat mMediaController;
     private Station mStation;
     private boolean mFirstTimeIn = true;
-    private ArrayList<Station> mQueue;
+    private List<Station> mQueue;
     private int mQueuePosition;
 
 
@@ -81,8 +83,9 @@ public class PlayerActivity extends AppCompatActivity implements
         mNextBtn = (ImageButton) findViewById(R.id.next_button);
         mNextBtn.setOnClickListener(this);
 
-        // retrieve the queue from the intent
-        mQueue = getIntent().getParcelableArrayListExtra(BUNDLE_STATION_QUEUE);
+        // retrieve the queue from the data cache
+        //mQueue = getIntent().getParcelableArrayListExtra(BUNDLE_STATION_QUEUE);
+        mQueue = StationDataCache.getStationDataCache().getStationList();
 
         if(savedInstanceState != null) {
             mFirstTimeIn = false;
