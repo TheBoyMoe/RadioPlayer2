@@ -138,10 +138,9 @@ public class PlaybackService extends Service implements
 
         // instantiate the media session
         mMediaSession = new MediaSessionCompat(this, LOG_TAG);
-        mMediaSession.setCallback(new MediaSessionCallback());
-        //mMediaSession.setActive(true); // move to after gaining focus
         mMediaSession.setFlags(MediaSessionCompat.FLAG_HANDLES_MEDIA_BUTTONS
                 | MediaSessionCompat.FLAG_HANDLES_TRANSPORT_CONTROLS);
+        mMediaSession.setCallback(new MediaSessionCallback());
 
         // set the initial playback state
         mMediaSession.setPlaybackState(mPlaybackState);
@@ -254,40 +253,29 @@ public class PlaybackService extends Service implements
         @Override
         public void onPlayFromUri(Uri uri, Bundle extras) {
 
-            Timber.i("onPlayFromUri called");
-            // Station stn = extras.getParcelable(EXTRA_STATION);
-
             try {
-                switch (mPlaybackState.getState()) {
-                    case PlaybackStateCompat.STATE_NONE:
-                    case PlaybackStateCompat.STATE_STOPPED:
-                        Timber.i("MediaPlayer: %s", mMediaPlayer);
-                        mMediaPlayer.reset();
-                        mMediaPlayer.setDataSource(PlaybackService.this, uri);
-                        mMediaPlayer.prepareAsync(); // calls onPrepared() when complete
-                        Timber.i("Buffering audio stream");
-                        mPlaybackState = updatePlaybackState(PlaybackStateCompat.STATE_BUFFERING);
-                        mMediaSession.setPlaybackState(mPlaybackState);
-                        // set the station metadata
-                        mMediaSession.setMetadata(new MediaMetadataCompat.Builder()
-                                        .putString(MediaMetadataCompat.METADATA_KEY_DISPLAY_TITLE, extras.getString(EXTRA_STATION_NAME))
-                                        .putString(MediaMetadataCompat.METADATA_KEY_DISPLAY_SUBTITLE, extras.getString(EXTRA_STATION_SLUG))
-                                        .putString(MediaMetadataCompat.METADATA_KEY_DISPLAY_DESCRIPTION, extras.getString(EXTRA_STATION_COUNTRY))
-                                        .putString(MediaMetadataCompat.METADATA_KEY_ART_URI, extras.getString(EXTRA_STATION_IMAGE_URL))
-                                        .putString(MediaMetadataCompat.METADATA_KEY_DISPLAY_ICON_URI, extras.getString(EXTRA_STATION_THUMB_URL))
-                                        .build());
-                        updateNotification();
-                        // acquire wifi lock to prevent wifi going to sleep while playing
-                        mWifiLock.acquire();
-                        break;
+                int state = mPlaybackState.getState();
+                if(state == PlaybackStateCompat.STATE_NONE || state == PlaybackStateCompat.STATE_STOPPED) {
 
-                    default: // FIXME ????
-                        mMediaPlayer.stop();
-                        Timber.i("CLICKED ON STOP!!!!!");
-                        mPlaybackState = updatePlaybackState(PlaybackStateCompat.STATE_STOPPED);
-                        mMediaSession.setPlaybackState(mPlaybackState);
-                        updateNotification();
-                        break;
+                    Timber.i("MediaPlayer: %s", mMediaPlayer);
+                    mMediaPlayer.reset();
+                    mMediaPlayer.setDataSource(PlaybackService.this, uri);
+                    mMediaPlayer.prepareAsync(); // calls onPrepared() when complete
+                    Timber.i("Buffering audio stream");
+                    mPlaybackState = updatePlaybackState(PlaybackStateCompat.STATE_BUFFERING);
+                    mMediaSession.setPlaybackState(mPlaybackState);
+                    // set the station metadata
+                    mMediaSession.setMetadata(new MediaMetadataCompat.Builder()
+                                    .putString(MediaMetadataCompat.METADATA_KEY_DISPLAY_TITLE, extras.getString(EXTRA_STATION_NAME))
+                                    .putString(MediaMetadataCompat.METADATA_KEY_DISPLAY_SUBTITLE, extras.getString(EXTRA_STATION_SLUG))
+                                    .putString(MediaMetadataCompat.METADATA_KEY_DISPLAY_DESCRIPTION, extras.getString(EXTRA_STATION_COUNTRY))
+                                    .putString(MediaMetadataCompat.METADATA_KEY_ART_URI, extras.getString(EXTRA_STATION_IMAGE_URL))
+                                    .putString(MediaMetadataCompat.METADATA_KEY_DISPLAY_ICON_URI, extras.getString(EXTRA_STATION_THUMB_URL))
+                                    .build());
+                    updateNotification();
+                    // acquire wifi lock to prevent wifi going to sleep while playing
+                    mWifiLock.acquire();
+
                 }
 
             } catch (IOException e) {
