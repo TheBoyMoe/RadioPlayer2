@@ -206,9 +206,8 @@ public class PlaybackService extends Service implements
             Timber.i("Gained audio focus, starting playback");
             mMediaPlayer.start();
 
-            // let the system know this session handles media buttons
+            // set media session obj as the target for media buttons
             mMediaSession.setActive(true);
-
 
             // update playback state
             mPlaybackState = updatePlaybackState(PlaybackStateCompat.STATE_PLAYING);
@@ -284,11 +283,6 @@ public class PlaybackService extends Service implements
 
         }
 
-        @Override
-        public void onPlay() {
-            super.onPlay();
-            // TODO Required??
-        }
 
         @Override
         public void onStop() {
@@ -297,8 +291,6 @@ public class PlaybackService extends Service implements
                     state == PlaybackStateCompat.STATE_BUFFERING) {
 
                 Timber.i("Stopping audio playback");
-                //mMediaPlayer.updateSession();
-                //mMediaSession.setPlaybackState(updatePlaybackState(PlaybackStateCompat.STATE_STOPPED));
                 mMediaPlayer.stop();
                 updateSession(PlaybackStateCompat.STATE_STOPPED, PlaybackServiceEvent.ON_STOP);
                 updateNotification();
@@ -352,7 +344,6 @@ public class PlaybackService extends Service implements
         mMediaSession.setPlaybackState(mPlaybackState);
         RadioPlayerApplication.postToBus(new PlaybackServiceEvent(event));
     }
-
 
     private void releaseMediaPlayer() {
         if(mMediaPlayer != null) {
