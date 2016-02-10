@@ -1,8 +1,12 @@
 package com.example.radioplayer.activity;
 
+import android.content.BroadcastReceiver;
 import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.ServiceConnection;
+import android.media.AudioManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.IBinder;
@@ -52,6 +56,8 @@ public class PlayerActivity extends AppCompatActivity implements
     private boolean mFirstTimeIn = true;
     private ArrayList<Station> mQueue;
     private int mQueuePosition;
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -114,9 +120,7 @@ public class PlayerActivity extends AppCompatActivity implements
         this.getApplicationContext().bindService(intent, this, 0);
         Timber.i("Binding Playback Service");
         startService(intent);
-
     }
-
 
     @Override
     protected void onSaveInstanceState(Bundle outState) {
@@ -146,29 +150,6 @@ public class PlayerActivity extends AppCompatActivity implements
         RadioPlayerApplication.getInstance().getBus().unregister(this);
     }
 
-    @Subscribe
-    public void getPlaybackServiceEvents(PlaybackServiceEvent event) {
-        switch (event.getMessage()) {
-            case PlaybackServiceEvent.ON_BUFFERING_COMPLETE:
-                mProgressBar.setVisibility(View.GONE);
-                break;
-            case PlaybackServiceEvent.ON_PLAYBACK_ERROR:
-                Utils.showSnackbar(mCoordinatorLayout, "An error has occurred, playback terminated");
-                mProgressBar.setVisibility(View.GONE);
-                break;
-            case PlaybackServiceEvent.ON_AUDIO_FOCUS_LOSS:
-                // another app has audio focus - display message to user
-                Utils.showSnackbar(mCoordinatorLayout, "Another app has gained audio focus, playback terminated");
-                break;
-            case PlaybackServiceEvent.ON_PLAYBACK_COMPLETION:
-                Utils.showSnackbar(mCoordinatorLayout, "Playback has come to an end");
-                mProgressBar.setVisibility(View.GONE);
-                break;
-            case PlaybackServiceEvent.ON_STOP:
-                // ??
-                break;
-        }
-    }
 
     @Override
     public void onClick(View view) {
@@ -246,6 +227,85 @@ public class PlayerActivity extends AppCompatActivity implements
     }
 
 
+    @Override
+    public void onServiceDisconnected(ComponentName name) {
+        Timber.i("Disconnected from Playback Service");
+    }
+
+
+    private MediaControllerCompat.Callback mMediaControllerCallback =
+        new MediaControllerCompat.Callback() {
+
+            @Override
+            public void onPlaybackStateChanged(PlaybackStateCompat state) {
+                switch (state.getState()) {
+                    case PlaybackStateCompat.STATE_NONE:
+                    case PlaybackStateCompat.STATE_STOPPED:
+                        mPlayStopBtn.setImageResource(R.drawable.action_play);
+                        break;
+                    case PlaybackStateCompat.STATE_BUFFERING:
+                    case PlaybackStateCompat.STATE_PLAYING:
+                        mPlayStopBtn.setImageResource(R.drawable.action_stop);
+                        break;
+                }
+            }
+
+            // IMPL onMetaDataChanged ot update the station title
+    };
+
+    // Helper methods ///////////////////////////////////////////////////////
+
+    // show snackbar to the user to display important system events
+    @Subscribe
+    public void getPlaybackServiceEvents(PlaybackServiceEvent event) {
+        switch (event.getMessage()) {
+            case PlaybackServiceEvent.ON_BUFFERING_COMPLETE:
+                mProgressBar.setVisibility(View.GONE);
+                break;
+            case PlaybackServiceEvent.ON_PLAYBACK_ERROR:
+                displayMessage("An error has occurred, playback terminated");
+                mProgressBar.setVisibility(View.GONE);
+                break;
+            case PlaybackServiceEvent.ON_AUDIO_FOCUS_LOSS:
+                // another app has audio focus - display message to user
+                displayMessage("Another app has gained audio focus, playback terminated");
+                break;
+            case PlaybackServiceEvent.ON_PLAYBACK_COMPLETION:
+                displayMessage("Playback has come to an end");
+                mProgressBar.setVisibility(View.GONE);
+                break;
+            case PlaybackServiceEvent.ON_BECOMING_NOISY:
+                displayMessage("Headphones removed, playback stopped");
+            case PlaybackServiceEvent.ON_STOP:
+                // ??
+                break;
+        }
+    }
+
+
+    private void displayMessage(String message) {
+        Utils.showSnackbar(mCoordinatorLayout, message);
+    }
+
+
+    // retrieve the stream url from the station object with a status of 1 or greater
+    private String getStream(Station stn) {
+
+        String url = null;
+        ArrayList<Stream> streams = (ArrayList<Stream>) stn.getStreams();
+        int status;
+        for (Stream stream : streams) {
+            status = stream.getStatus();
+            if(status >= 0) {
+                url = stream.getStream();
+                if(url != null && !url.isEmpty())
+                    break;
+            }
+        }
+        return url;
+    }
+
+
     private void updatePlayer() {
         // ensure index not out of bounds
         if(mQueuePosition >=0 && mQueuePosition < mQueue.size()) {
@@ -298,53 +358,9 @@ public class PlayerActivity extends AppCompatActivity implements
                 mProgressBar.setVisibility(View.VISIBLE);
 
             } else {
-                Utils.showSnackbar(mCoordinatorLayout, "No stream found, try a different station");
+                displayMessage("No stream found, try a different station");
             }
         }
-    }
-
-    @Override
-    public void onServiceDisconnected(ComponentName name) {
-        Timber.i("Disconnected from Playback Service");
-    }
-
-
-    private MediaControllerCompat.Callback mMediaControllerCallback =
-        new MediaControllerCompat.Callback() {
-
-            @Override
-            public void onPlaybackStateChanged(PlaybackStateCompat state) {
-                switch (state.getState()) {
-                    case PlaybackStateCompat.STATE_NONE:
-                    case PlaybackStateCompat.STATE_STOPPED:
-                        mPlayStopBtn.setImageResource(R.drawable.action_play);
-                        break;
-                    case PlaybackStateCompat.STATE_BUFFERING:
-                    case PlaybackStateCompat.STATE_PLAYING:
-                        mPlayStopBtn.setImageResource(R.drawable.action_stop);
-                        break;
-                }
-            }
-
-            // IMPL onMetaDataChanged ot update the station title
-    };
-
-
-    // retrieve the stream url from the station object with a status of 1 or greater
-    private String getStream(Station stn) {
-
-        String url = null;
-        ArrayList<Stream> streams = (ArrayList<Stream>) stn.getStreams();
-        int status;
-        for (Stream stream : streams) {
-            status = stream.getStatus();
-            if(status >= 0) {
-                url = stream.getStream();
-                if(url != null && !url.isEmpty())
-                    break;
-            }
-        }
-        return url;
     }
 
 }
