@@ -154,14 +154,12 @@ public class PlayerActivity extends AppCompatActivity implements
         switch(view.getId()) {
 
             case R.id.play_stop_button:
-                if(state == PlaybackStateCompat.STATE_NONE
-                        || state == PlaybackStateCompat.STATE_STOPPED) {
-
+                if(state == PlaybackStateCompat.STATE_NONE || state == PlaybackStateCompat.STATE_STOPPED) {
                     // start playback
                     Timber.i("Clicked play");
                     playFromStationUri();
                 } else if(state == PlaybackStateCompat.STATE_BUFFERING || state == PlaybackStateCompat.STATE_PLAYING){
-                    // stop playback
+                    // stop playback // FIXME calling stop when buffering causes media player error(-38, 0)
                     mMediaController.getTransportControls().stop();
                     Timber.i("Clicked stop");
                 }

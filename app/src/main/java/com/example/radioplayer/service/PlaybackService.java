@@ -23,6 +23,7 @@ import android.support.v4.media.session.PlaybackStateCompat;
 
 import com.example.radioplayer.RadioPlayerApplication;
 import com.example.radioplayer.event.PlaybackServiceEvent;
+import com.example.radioplayer.util.Utils;
 
 import java.io.IOException;
 
@@ -160,6 +161,8 @@ public class PlaybackService extends Service implements
 
         // register the event bus to enable event posting
         RadioPlayerApplication.getInstance().getBus().register(this);
+
+        Utils.getMediaPlayerStateCodes();
     }
 
 
