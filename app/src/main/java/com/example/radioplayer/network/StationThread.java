@@ -35,22 +35,22 @@ public class StationThread extends Thread{
     private Context mContext;
     private Long mCategoryId;
     private int mPage = 1;
-    private int mResultsPerPage = 20;
 
     // build the url so that you can pass in the category id and the page number
     // private static final String STATION_URL =
     //    "http://api.dirble.com/v2/category/5/stations?page=1&per_page=2&token=xxxx-xxxxxx-xxxxxx";
 
-    // TODO pagination
-    public StationThread(String threadName, Context context, Long categoryId) {
+    public StationThread(String threadName, Context context, Long categoryId, int pageNumber) {
         super(threadName);
         mContext = context;
         mCategoryId = categoryId;
+        mPage = pageNumber;
     }
 
     @Override
     public void run() {
         Timber.i("Executing station thread");
+        int resultsPerPage = 20;
 
         HttpURLConnection con = null;
         URL url = null;
@@ -59,7 +59,7 @@ public class StationThread extends Thread{
         String token = mContext.getResources().getString(R.string.dirble_api_key);
         Uri stationUri = Uri.parse(BASE_URL + mCategoryId + QUERY).buildUpon()
                 .appendQueryParameter(PAGE_PARAM, String.valueOf(mPage))
-                .appendQueryParameter(RESULTS_PER_PAGE, String.valueOf(mResultsPerPage))
+                .appendQueryParameter(RESULTS_PER_PAGE, String.valueOf(resultsPerPage))
                 .appendQueryParameter(TOKEN_PARAM, token)
                 .build();
 

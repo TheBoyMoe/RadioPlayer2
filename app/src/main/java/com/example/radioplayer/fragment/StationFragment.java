@@ -2,6 +2,7 @@ package com.example.radioplayer.fragment;
 
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -26,13 +27,21 @@ import java.util.List;
 
 import timber.log.Timber;
 
+/**
+ * References:
+ * [1] https://guides.codepath.com/android/Implementing-Pull-to-Refresh-Guide
+ */
 public class StationFragment extends BaseFragment{
 
     public static final String BUNDLE_CATEGORY_ID = "category_id";
+    private static final String BUNDLE_PAGE_NUMBER = "page_number";
     private List<Station> mStationList = new ArrayList<>();
     private StationArrayAdapter mAdapter;
     private Long mCategoryId;
     private boolean mIsStarted = false;
+    private ListView mListView;
+    private SwipeRefreshLayout mRefreshLayout;
+    private int mPageCount = 0;
 
     public StationFragment() {}
 
@@ -56,10 +65,13 @@ public class StationFragment extends BaseFragment{
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
-        ListView listView = (ListView) inflater.inflate(R.layout.list_view, container, false);
+        View view = inflater.inflate(R.layout.station_list_view, container, false);
+        mRefreshLayout = (SwipeRefreshLayout) view.findViewById(R.id.swipe_container);
+        mListView = (ListView) view.findViewById(R.id.list_view);
+
         mAdapter = new StationArrayAdapter(mStationList);
-        listView.setAdapter(mAdapter);
-        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+        mListView.setAdapter(mAdapter);
+        mListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 RadioPlayerApplication.postToBus(new OnClickEvent(OnClickEvent.STATION_ON_CLICK_EVENT, position));
@@ -67,22 +79,46 @@ public class StationFragment extends BaseFragment{
         });
 
         if(savedInstanceState != null) {
-            // retrieve the station list from the cache
+            // retrieve page number from the bundle
+            mPageCount = savedInstanceState.getInt(BUNDLE_PAGE_NUMBER);
+            // retrieve the station list from the cache on rotation
             mStationList.addAll(StationDataCache.getStationDataCache().getStationList());
             mAdapter.notifyDataSetChanged();
+            Timber.i("Station list size on rotation: %d", mStationList.size());
         } else {
             // first time in, download station list
-            if(Utils.isClientConnected(getActivity())) {
-                if(!mIsStarted) {
-                    mIsStarted = true;
-                    new StationThread("StationThread", getActivity(), mCategoryId).start();
-                }
-            } else {
-                Timber.i("Client not connected");
-                RadioPlayerApplication.postToBus(new MessageEvent("Not connected, check connection"));
-            }
+            downloadStationData();
         }
-        return listView;
+
+        // setup refresh listener which triggers another data download
+        mRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                // TODO - increment counter and download the next page
+                downloadStationData();
+            }
+        });
+
+        return view;
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putInt(BUNDLE_PAGE_NUMBER, mPageCount);
+    }
+
+    private void downloadStationData() {
+        if(Utils.isClientConnected(getActivity())) {
+            if(!mIsStarted) {
+                mIsStarted = true;
+                ++mPageCount;
+                new StationThread("StationThread", getActivity(), mCategoryId, mPageCount).start();
+            }
+        } else {
+            Timber.i("Client not connected");
+            RadioPlayerApplication.postToBus(new MessageEvent("Not connected, check connection"));
+        }
     }
 
 
@@ -90,10 +126,13 @@ public class StationFragment extends BaseFragment{
     public void refreshUi(StationThreadCompletionEvent event) {
         if(event.isThreadComplete()) {
             mIsStarted = false;
+            // signal refreshing complete
+            mRefreshLayout.setRefreshing(false);
             // refresh the station list with the most up-to-date list from the cache
             mStationList.clear();
             mStationList.addAll(StationDataCache.getStationDataCache().getStationList());
             mAdapter.notifyDataSetChanged();
+            Timber.i("Station list size on download: %d", mStationList.size());
         }
     }
 

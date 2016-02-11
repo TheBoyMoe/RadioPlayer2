@@ -4,6 +4,8 @@ import com.example.radioplayer.model.Station;
 
 import java.util.ArrayList;
 
+import timber.log.Timber;
+
 /**
  * Singleton data cache used to hold the station list, accessible anywhere within the app
  */
@@ -11,7 +13,7 @@ import java.util.ArrayList;
 public class StationDataCache {
 
     private static StationDataCache sDataCache;
-    private ArrayList<Station> mList;
+    private ArrayList<Station> mList = new ArrayList<>();
 
     private StationDataCache() {}
 
@@ -27,11 +29,18 @@ public class StationDataCache {
     }
 
     public void setStationList(ArrayList<Station> list) {
-        mList = list;
+        mList.addAll(list); // add to the current cache
     }
 
     public Station getStation(int position) {
         return mList.get(position);
+    }
+
+    public void clearDataCache() {
+        if(mList.size() > 0) {
+            mList.clear();
+            Timber.i("Clearing data cache");
+        }
     }
 
 }
