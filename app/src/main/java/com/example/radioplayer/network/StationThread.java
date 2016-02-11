@@ -20,6 +20,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedList;
 import java.util.List;
 
 import timber.log.Timber;
@@ -50,7 +51,7 @@ public class StationThread extends Thread{
     @Override
     public void run() {
         Timber.i("Executing station thread");
-        int resultsPerPage = 20;
+        int resultsPerPage = 12;
 
         HttpURLConnection con = null;
         URL url = null;
@@ -72,10 +73,10 @@ public class StationThread extends Thread{
             Station[] data = new Gson().fromJson(reader, Station[].class);
             if(data != null) {
                 List<Station> stationList = Arrays.asList(data);
-                Timber.i("Station list: %s", stationList.toString());
+                Timber.i("Downloaded list: %s", stationList.toString());
 
                 // stash the station list in the data cache
-                StationDataCache.getStationDataCache().setStationList(new ArrayList<>(stationList));
+                StationDataCache.getStationDataCache().setStationList(new LinkedList<>(stationList));
                 // let the station fragment know the station list has been updated
                 RadioPlayerApplication.postToBus(new StationThreadCompletionEvent(true));
 

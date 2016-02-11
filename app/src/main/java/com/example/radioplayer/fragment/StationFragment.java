@@ -23,6 +23,8 @@ import com.example.radioplayer.util.Utils;
 import com.squareup.otto.Subscribe;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
 
 import timber.log.Timber;
@@ -35,7 +37,7 @@ public class StationFragment extends BaseFragment{
 
     public static final String BUNDLE_CATEGORY_ID = "category_id";
     private static final String BUNDLE_PAGE_NUMBER = "page_number";
-    private List<Station> mStationList = new ArrayList<>();
+    private List<Station> mStationList = new LinkedList<>();
     private StationArrayAdapter mAdapter;
     private Long mCategoryId;
     private boolean mIsStarted = false;
@@ -78,13 +80,18 @@ public class StationFragment extends BaseFragment{
             }
         });
 
+        mRefreshLayout.setColorSchemeResources(
+                R.color.color_swipe_1,
+                R.color.color_swipe_2,
+                R.color.color_swipe_3,
+                R.color.color_swipe_4
+        );
+
         if(savedInstanceState != null) {
             // retrieve page number from the bundle
             mPageCount = savedInstanceState.getInt(BUNDLE_PAGE_NUMBER);
             // retrieve the station list from the cache on rotation
-            mStationList.addAll(StationDataCache.getStationDataCache().getStationList());
-            mAdapter.notifyDataSetChanged();
-            Timber.i("Station list size on rotation: %d", mStationList.size());
+            setStationList();
         } else {
             // first time in, download station list
             downloadStationData();
@@ -130,10 +137,16 @@ public class StationFragment extends BaseFragment{
             mRefreshLayout.setRefreshing(false);
             // refresh the station list with the most up-to-date list from the cache
             mStationList.clear();
-            mStationList.addAll(StationDataCache.getStationDataCache().getStationList());
-            mAdapter.notifyDataSetChanged();
-            Timber.i("Station list size on download: %d", mStationList.size());
+            // TODO reverse order of list
+            setStationList();
         }
+    }
+
+    private void setStationList() {
+        List<Station> list = new LinkedList<>(StationDataCache.getStationDataCache().getStationList());
+        Collections.reverse(list);
+        mStationList.addAll(list);
+        mAdapter.notifyDataSetChanged();
     }
 
 
