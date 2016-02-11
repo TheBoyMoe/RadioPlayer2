@@ -1,9 +1,5 @@
 package com.example.radioplayer.event;
 
-import com.example.radioplayer.model.Station;
-
-import java.util.List;
-
 public class StationThreadCompletionEvent extends BaseEvent{
 
 //    private List<Station> mStationList;

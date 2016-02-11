@@ -15,9 +15,7 @@ import com.example.radioplayer.RadioPlayerApplication;
 import com.example.radioplayer.data.StationDataCache;
 import com.example.radioplayer.event.MessageEvent;
 import com.example.radioplayer.event.OnClickEvent;
-import com.example.radioplayer.event.RefreshUIEvent;
 import com.example.radioplayer.event.StationThreadCompletionEvent;
-import com.example.radioplayer.event.ThreadCompletionEvent;
 import com.example.radioplayer.model.Station;
 import com.example.radioplayer.network.StationThread;
 import com.example.radioplayer.util.Utils;
@@ -46,31 +44,13 @@ public class StationFragment extends BaseFragment{
         return fragment;
     }
 
-//    public void setStationData(List<Station> list) {
-//        mStationList.clear();
-//        mStationList.addAll(list);
-//        Timber.i("Received data set from StationDataFragment, size: %d", mStationList.size());
-//    }
-
-
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        // TODO - fix execution of thread every device rotation
         // retrieve the categoryId & execute the background thread to download the station list
         mCategoryId = getArguments().getLong(BUNDLE_CATEGORY_ID);
-        if(Utils.isClientConnected(getActivity())) {
-            if(!mIsStarted) {
-                mIsStarted = true;
-                new StationThread("StationThread", getActivity(), mCategoryId).start();
-            }
-        } else {
-            Timber.i("Client not connected");
-            RadioPlayerApplication.postToBus(new MessageEvent("Not connected, check connection"));
-        }
-
     }
+
 
     @Nullable
     @Override
@@ -85,16 +65,26 @@ public class StationFragment extends BaseFragment{
                 RadioPlayerApplication.postToBus(new OnClickEvent(OnClickEvent.STATION_ON_CLICK_EVENT, position));
             }
         });
+
+        if(savedInstanceState != null) {
+            // retrieve the station list from the cache
+            mStationList.addAll(StationDataCache.getStationDataCache().getStationList());
+            mAdapter.notifyDataSetChanged();
+        } else {
+            // first time in, download station list
+            if(Utils.isClientConnected(getActivity())) {
+                if(!mIsStarted) {
+                    mIsStarted = true;
+                    new StationThread("StationThread", getActivity(), mCategoryId).start();
+                }
+            } else {
+                Timber.i("Client not connected");
+                RadioPlayerApplication.postToBus(new MessageEvent("Not connected, check connection"));
+            }
+        }
         return listView;
     }
 
-    // handle data set changed event - update UI
-//    @Subscribe
-//    public void refreshUi(RefreshUIEvent event) {
-//        String refreshEvent = event.getRefreshEvent();
-//        if(refreshEvent.equals(RefreshUIEvent.REFRESH_STATION_LIST_UI))
-//            mAdapter.notifyDataSetChanged();
-//    }
 
     @Subscribe
     public void refreshUi(StationThreadCompletionEvent event) {

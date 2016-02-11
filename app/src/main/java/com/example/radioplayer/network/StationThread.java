@@ -79,7 +79,6 @@ public class StationThread extends Thread{
                 // let the station fragment know the station list has been updated
                 RadioPlayerApplication.postToBus(new StationThreadCompletionEvent(true));
 
-                //RadioPlayerApplication.postToBus(new StationThreadCompletionEvent(stationList));
             } else {
                 Timber.i("No results received from remote server");
                 // post message to bus - display snackbar to user

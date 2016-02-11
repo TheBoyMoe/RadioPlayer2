@@ -1,12 +1,8 @@
 package com.example.radioplayer.activity;
 
-import android.content.BroadcastReceiver;
 import android.content.ComponentName;
-import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.ServiceConnection;
-import android.media.AudioManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.IBinder;
@@ -42,7 +38,6 @@ public class PlayerActivity extends AppCompatActivity implements
 
     private static final String BUNDLE_STATE = "state";
     private static final String BUNDLE_CURRENT_STATION = "current_station";
-    //private static final String BUNDLE_CURRENT_STATION_TITLE = "current_station_title";
 
     public static final String BUNDLE_QUEUE_POSITION = "queue_position";
     public static final String BUNDLE_STATION_QUEUE = "station_queue"; // station list
@@ -84,14 +79,12 @@ public class PlayerActivity extends AppCompatActivity implements
         mNextBtn.setOnClickListener(this);
 
         // retrieve the queue from the data cache
-        //mQueue = getIntent().getParcelableArrayListExtra(BUNDLE_STATION_QUEUE);
         mQueue = StationDataCache.getStationDataCache().getStationList();
 
         if(savedInstanceState != null) {
             mFirstTimeIn = false;
 
             // restore player state
-            //mStation = savedInstanceState.getParcelable(BUNDLE_CURRENT_STATION);
             mQueuePosition = savedInstanceState.getInt(BUNDLE_QUEUE_POSITION, 0);
             int state = savedInstanceState.getInt(BUNDLE_STATE);
 
@@ -260,25 +253,18 @@ public class PlayerActivity extends AppCompatActivity implements
 
     // show snackbar to the user to display important system events
     @Subscribe
-    public void getPlaybackServiceEvents(PlaybackServiceEvent event) {
-        switch (event.getMessage()) {
+    public void getMessageEvent(PlaybackServiceEvent event) {
+        String message = event.getMessage();
+        switch (message) {
             case PlaybackServiceEvent.ON_BUFFERING_COMPLETE:
-                mProgressBar.setVisibility(View.GONE);
-                break;
             case PlaybackServiceEvent.ON_PLAYBACK_ERROR:
-                displayMessage("An error has occurred, playback terminated");
-                mProgressBar.setVisibility(View.GONE);
-                break;
-            case PlaybackServiceEvent.ON_AUDIO_FOCUS_LOSS:
-                // another app has audio focus - display message to user
-                displayMessage("Another app has gained audio focus, playback terminated");
-                break;
             case PlaybackServiceEvent.ON_PLAYBACK_COMPLETION:
-                displayMessage("Playback has come to an end");
-                mProgressBar.setVisibility(View.GONE);
-                break;
+            case PlaybackServiceEvent.ON_AUDIO_FOCUS_LOSS:
             case PlaybackServiceEvent.ON_BECOMING_NOISY:
-                displayMessage("Headphones removed, playback stopped");
+                mProgressBar.setVisibility(View.GONE);
+                displayMessage(message);
+                break;
+
             case PlaybackServiceEvent.ON_STOP:
                 // ??
                 break;
