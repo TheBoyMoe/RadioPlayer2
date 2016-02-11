@@ -161,8 +161,6 @@ public class PlaybackService extends Service implements
 
         // register the event bus to enable event posting
         RadioPlayerApplication.getInstance().getBus().register(this);
-
-        Utils.getMediaPlayerStateCodes();
     }
 
 
