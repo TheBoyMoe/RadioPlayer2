@@ -1,12 +1,8 @@
 package com.example.radioplayer.activity;
 
-import android.content.BroadcastReceiver;
 import android.content.ComponentName;
-import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.ServiceConnection;
-import android.media.AudioManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.IBinder;
@@ -23,6 +19,7 @@ import android.widget.TextView;
 
 import com.example.radioplayer.R;
 import com.example.radioplayer.RadioPlayerApplication;
+import com.example.radioplayer.data.StationDataCache;
 import com.example.radioplayer.event.PlaybackServiceEvent;
 import com.example.radioplayer.model.Station;
 import com.example.radioplayer.model.Stream;
@@ -31,6 +28,7 @@ import com.example.radioplayer.util.Utils;
 import com.squareup.otto.Subscribe;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import timber.log.Timber;
 
@@ -40,7 +38,6 @@ public class PlayerActivity extends AppCompatActivity implements
 
     private static final String BUNDLE_STATE = "state";
     private static final String BUNDLE_CURRENT_STATION = "current_station";
-    //private static final String BUNDLE_CURRENT_STATION_TITLE = "current_station_title";
 
     public static final String BUNDLE_QUEUE_POSITION = "queue_position";
     public static final String BUNDLE_STATION_QUEUE = "station_queue"; // station list
@@ -54,7 +51,7 @@ public class PlayerActivity extends AppCompatActivity implements
     private MediaControllerCompat mMediaController;
     private Station mStation;
     private boolean mFirstTimeIn = true;
-    private ArrayList<Station> mQueue;
+    private List<Station> mQueue;
     private int mQueuePosition;
 
 
@@ -81,14 +78,13 @@ public class PlayerActivity extends AppCompatActivity implements
         mNextBtn = (ImageButton) findViewById(R.id.next_button);
         mNextBtn.setOnClickListener(this);
 
-        // retrieve the queue from the intent
-        mQueue = getIntent().getParcelableArrayListExtra(BUNDLE_STATION_QUEUE);
+        // retrieve the queue from the data cache
+        mQueue = StationDataCache.getStationDataCache().getStationList();
 
         if(savedInstanceState != null) {
             mFirstTimeIn = false;
 
             // restore player state
-            //mStation = savedInstanceState.getParcelable(BUNDLE_CURRENT_STATION);
             mQueuePosition = savedInstanceState.getInt(BUNDLE_QUEUE_POSITION, 0);
             int state = savedInstanceState.getInt(BUNDLE_STATE);
 
@@ -158,14 +154,12 @@ public class PlayerActivity extends AppCompatActivity implements
         switch(view.getId()) {
 
             case R.id.play_stop_button:
-                if(state == PlaybackStateCompat.STATE_NONE
-                        || state == PlaybackStateCompat.STATE_STOPPED) {
-
+                if(state == PlaybackStateCompat.STATE_NONE || state == PlaybackStateCompat.STATE_STOPPED) {
                     // start playback
                     Timber.i("Clicked play");
                     playFromStationUri();
                 } else if(state == PlaybackStateCompat.STATE_BUFFERING || state == PlaybackStateCompat.STATE_PLAYING){
-                    // stop playback
+                    // stop playback // FIXME calling stop when buffering causes media player error(-38, 0)
                     mMediaController.getTransportControls().stop();
                     Timber.i("Clicked stop");
                 }
@@ -257,25 +251,18 @@ public class PlayerActivity extends AppCompatActivity implements
 
     // show snackbar to the user to display important system events
     @Subscribe
-    public void getPlaybackServiceEvents(PlaybackServiceEvent event) {
-        switch (event.getMessage()) {
+    public void getMessageEvent(PlaybackServiceEvent event) {
+        String message = event.getMessage();
+        switch (message) {
             case PlaybackServiceEvent.ON_BUFFERING_COMPLETE:
-                mProgressBar.setVisibility(View.GONE);
-                break;
             case PlaybackServiceEvent.ON_PLAYBACK_ERROR:
-                displayMessage("An error has occurred, playback terminated");
-                mProgressBar.setVisibility(View.GONE);
-                break;
-            case PlaybackServiceEvent.ON_AUDIO_FOCUS_LOSS:
-                // another app has audio focus - display message to user
-                displayMessage("Another app has gained audio focus, playback terminated");
-                break;
             case PlaybackServiceEvent.ON_PLAYBACK_COMPLETION:
-                displayMessage("Playback has come to an end");
-                mProgressBar.setVisibility(View.GONE);
-                break;
+            case PlaybackServiceEvent.ON_AUDIO_FOCUS_LOSS:
             case PlaybackServiceEvent.ON_BECOMING_NOISY:
-                displayMessage("Headphones removed, playback stopped");
+                mProgressBar.setVisibility(View.GONE);
+                displayMessage(message);
+                break;
+
             case PlaybackServiceEvent.ON_STOP:
                 // ??
                 break;

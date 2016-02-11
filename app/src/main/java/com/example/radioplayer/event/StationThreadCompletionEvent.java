@@ -1,18 +1,24 @@
 package com.example.radioplayer.event;
 
-import com.example.radioplayer.model.Station;
-
-import java.util.List;
-
 public class StationThreadCompletionEvent extends BaseEvent{
 
-    private List<Station> mStationList;
+//    private List<Station> mStationList;
+//
+//    public StationThreadCompletionEvent(List<Station> stationList) {
+//        mStationList = stationList;
+//    }
+//
+//    public List<Station> getStationList() {
+//        return mStationList;
+//    }
 
-    public StationThreadCompletionEvent(List<Station> stationList) {
-        mStationList = stationList;
+    private boolean mThreadComplete;
+
+    public StationThreadCompletionEvent(boolean threadComplete) {
+        mThreadComplete = threadComplete;
     }
 
-    public List<Station> getStationList() {
-        return mStationList;
+    public boolean isThreadComplete() {
+        return mThreadComplete;
     }
 }

@@ -12,9 +12,13 @@ import android.widget.TextView;
 
 import com.example.radioplayer.R;
 import com.example.radioplayer.RadioPlayerApplication;
+import com.example.radioplayer.data.StationDataCache;
+import com.example.radioplayer.event.MessageEvent;
 import com.example.radioplayer.event.OnClickEvent;
-import com.example.radioplayer.event.RefreshUIEvent;
+import com.example.radioplayer.event.StationThreadCompletionEvent;
 import com.example.radioplayer.model.Station;
+import com.example.radioplayer.network.StationThread;
+import com.example.radioplayer.util.Utils;
 import com.squareup.otto.Subscribe;
 
 import java.util.ArrayList;
@@ -24,27 +28,34 @@ import timber.log.Timber;
 
 public class StationFragment extends BaseFragment{
 
+    public static final String BUNDLE_CATEGORY_ID = "category_id";
     private List<Station> mStationList = new ArrayList<>();
     private StationArrayAdapter mAdapter;
+    private Long mCategoryId;
+    private boolean mIsStarted = false;
 
     public StationFragment() {}
 
-    public static StationFragment newInstance() {
-        return new StationFragment();
+    public static StationFragment newInstance(Long categoryId) {
+        StationFragment fragment = new StationFragment();
+        Bundle args = new Bundle();
+        args.putLong(BUNDLE_CATEGORY_ID, categoryId);
+        fragment.setArguments(args);
+        return fragment;
     }
 
-    public void setStationData(List<Station> list) {
-        // TODO when category id the same don't clear list
-        mStationList.clear();
-        mStationList.addAll(list);
-        Timber.i("Received data set from StationDataFragment, size: %d", mStationList.size());
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        // retrieve the categoryId & execute the background thread to download the station list
+        mCategoryId = getArguments().getLong(BUNDLE_CATEGORY_ID);
     }
+
 
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        // TODO pull to refresh
-        // build the UI
+
         ListView listView = (ListView) inflater.inflate(R.layout.list_view, container, false);
         mAdapter = new StationArrayAdapter(mStationList);
         listView.setAdapter(mAdapter);
@@ -55,15 +66,35 @@ public class StationFragment extends BaseFragment{
             }
         });
 
+        if(savedInstanceState != null) {
+            // retrieve the station list from the cache
+            mStationList.addAll(StationDataCache.getStationDataCache().getStationList());
+            mAdapter.notifyDataSetChanged();
+        } else {
+            // first time in, download station list
+            if(Utils.isClientConnected(getActivity())) {
+                if(!mIsStarted) {
+                    mIsStarted = true;
+                    new StationThread("StationThread", getActivity(), mCategoryId).start();
+                }
+            } else {
+                Timber.i("Client not connected");
+                RadioPlayerApplication.postToBus(new MessageEvent("Not connected, check connection"));
+            }
+        }
         return listView;
     }
 
-    // handle data set changed event - update UI
+
     @Subscribe
-    public void refreshUi(RefreshUIEvent event) {
-        String refreshEvent = event.getRefreshEvent();
-        if(refreshEvent.equals(RefreshUIEvent.REFRESH_STATION_LIST_UI))
+    public void refreshUi(StationThreadCompletionEvent event) {
+        if(event.isThreadComplete()) {
+            mIsStarted = false;
+            // refresh the station list with the most up-to-date list from the cache
+            mStationList.clear();
+            mStationList.addAll(StationDataCache.getStationDataCache().getStationList());
             mAdapter.notifyDataSetChanged();
+        }
     }
 
 

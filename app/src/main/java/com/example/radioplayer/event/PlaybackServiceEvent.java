@@ -2,12 +2,12 @@ package com.example.radioplayer.event;
 
 public class PlaybackServiceEvent extends MessageEvent{
 
-    public static final String ON_BUFFERING_COMPLETE = "on_loading_complete";
-    public static final String ON_PLAYBACK_COMPLETION = "on_stream_completion";
-    public static final String ON_PLAYBACK_ERROR = "on_media_error";
-    public static final String ON_AUDIO_FOCUS_LOSS = "on_audio_focus_loss";
-    public static final String ON_STOP = "on_stop";
-    public static final String ON_BECOMING_NOISY = "on_becoming_noisy";
+    public static final String ON_BUFFERING_COMPLETE = "Buffering complete, playback starting";
+    public static final String ON_PLAYBACK_COMPLETION = "Playback stopped, stream complete";
+    public static final String ON_PLAYBACK_ERROR = "Media error encountered";
+    public static final String ON_AUDIO_FOCUS_LOSS = "Playback stopped, focus has been lost";
+    public static final String ON_STOP = "Playback stopped";
+    public static final String ON_BECOMING_NOISY = "Playback stopped, headphones removed";
 
     public PlaybackServiceEvent(String message) {
         super(message);

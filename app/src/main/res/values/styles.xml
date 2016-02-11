@@ -8,9 +8,20 @@
         <item name="colorAccent">@color/colorAccent</item>
     </style>
 
+
+    <!-- Remove the action bar on activities that use the added toolbar-->
     <style name="AppTheme.NoActionBar">
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
+    </style>
+
+
+    <!-- PlayActivity theme for tablet -->
+    <style name="AppTheme.ThemeWhenLarge" parent="Theme.AppCompat.Light.DialogWhenLarge">
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+        <!-- set actionBar color-->
+        <item name="colorPrimary">@color/colorPrimary</item>
     </style>
 
     <style name="AppTheme.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar"/>

@@ -23,11 +23,9 @@ import android.support.v4.media.session.PlaybackStateCompat;
 
 import com.example.radioplayer.RadioPlayerApplication;
 import com.example.radioplayer.event.PlaybackServiceEvent;
-import com.example.radioplayer.model.Station;
 import com.example.radioplayer.util.Utils;
 
 import java.io.IOException;
-import java.util.List;
 
 import timber.log.Timber;
 
@@ -57,8 +55,7 @@ public class PlaybackService extends Service implements
     private MediaControllerCompat mMediaController;
     private MediaPlayer mMediaPlayer;
     private Binder mBinder = new ServiceBinder();
-    //private int mCurrentQueueIndex = 0;
-    //private List<Station> mPlayingQueue;
+    private boolean mIsRegistered;
 
     private final IntentFilter mNoisyIntentFilter =
             new IntentFilter(AudioManager.ACTION_AUDIO_BECOMING_NOISY);
@@ -138,10 +135,9 @@ public class PlaybackService extends Service implements
 
         // instantiate the media session
         mMediaSession = new MediaSessionCompat(this, LOG_TAG);
-        mMediaSession.setCallback(new MediaSessionCallback());
-        //mMediaSession.setActive(true); // move to after gaining focus
         mMediaSession.setFlags(MediaSessionCompat.FLAG_HANDLES_MEDIA_BUTTONS
                 | MediaSessionCompat.FLAG_HANDLES_TRANSPORT_CONTROLS);
+        mMediaSession.setCallback(new MediaSessionCallback());
 
         // set the initial playback state
         mMediaSession.setPlaybackState(mPlaybackState);
@@ -179,7 +175,7 @@ public class PlaybackService extends Service implements
 
 
     @Override
-    public void onAudioFocusChange(int focusChange) {
+    public void onAudioFocusChange(int focusChange)     {
         // if we've lost focus, updateSession playback
         if(focusChange == AudioManager.AUDIOFOCUS_LOSS ||
                 focusChange == AudioManager.AUDIOFOCUS_LOSS_TRANSIENT ||
@@ -200,16 +196,15 @@ public class PlaybackService extends Service implements
         int audioFocus = mAudioManager.requestAudioFocus(this, AudioManager.STREAM_MUSIC, AudioManager.AUDIOFOCUS_GAIN);
 
         // register noisy broadcast receiver
-        registerReceiver(mNoisyBroadcastReceiver, mNoisyIntentFilter);
+        registerNoisy();
 
         // if we've gained focus, start playback
         if(audioFocus == AudioManager.AUDIOFOCUS_REQUEST_GRANTED) {
             Timber.i("Gained audio focus, starting playback");
             mMediaPlayer.start();
 
-            // let the system know this session handles media buttons
+            // set media session obj as the target for media buttons
             mMediaSession.setActive(true);
-
 
             // update playback state
             mPlaybackState = updatePlaybackState(PlaybackStateCompat.STATE_PLAYING);
@@ -254,40 +249,28 @@ public class PlaybackService extends Service implements
         @Override
         public void onPlayFromUri(Uri uri, Bundle extras) {
 
-            Timber.i("onPlayFromUri called");
-            // Station stn = extras.getParcelable(EXTRA_STATION);
-
             try {
-                switch (mPlaybackState.getState()) {
-                    case PlaybackStateCompat.STATE_NONE:
-                    case PlaybackStateCompat.STATE_STOPPED:
-                        Timber.i("MediaPlayer: %s", mMediaPlayer);
-                        mMediaPlayer.reset();
-                        mMediaPlayer.setDataSource(PlaybackService.this, uri);
-                        mMediaPlayer.prepareAsync(); // calls onPrepared() when complete
-                        Timber.i("Buffering audio stream");
-                        mPlaybackState = updatePlaybackState(PlaybackStateCompat.STATE_BUFFERING);
-                        mMediaSession.setPlaybackState(mPlaybackState);
-                        // set the station metadata
-                        mMediaSession.setMetadata(new MediaMetadataCompat.Builder()
-                                        .putString(MediaMetadataCompat.METADATA_KEY_DISPLAY_TITLE, extras.getString(EXTRA_STATION_NAME))
-                                        .putString(MediaMetadataCompat.METADATA_KEY_DISPLAY_SUBTITLE, extras.getString(EXTRA_STATION_SLUG))
-                                        .putString(MediaMetadataCompat.METADATA_KEY_DISPLAY_DESCRIPTION, extras.getString(EXTRA_STATION_COUNTRY))
-                                        .putString(MediaMetadataCompat.METADATA_KEY_ART_URI, extras.getString(EXTRA_STATION_IMAGE_URL))
-                                        .putString(MediaMetadataCompat.METADATA_KEY_DISPLAY_ICON_URI, extras.getString(EXTRA_STATION_THUMB_URL))
-                                        .build());
-                        updateNotification();
-                        // acquire wifi lock to prevent wifi going to sleep while playing
-                        mWifiLock.acquire();
-                        break;
+                int state = mPlaybackState.getState();
+                if(state == PlaybackStateCompat.STATE_NONE || state == PlaybackStateCompat.STATE_STOPPED) {
 
-                    default: // FIXME ????
-                        mMediaPlayer.stop();
-                        Timber.i("CLICKED ON STOP!!!!!");
-                        mPlaybackState = updatePlaybackState(PlaybackStateCompat.STATE_STOPPED);
-                        mMediaSession.setPlaybackState(mPlaybackState);
-                        updateNotification();
-                        break;
+                    Timber.i("MediaPlayer: %s", mMediaPlayer);
+                    mMediaPlayer.reset();
+                    mMediaPlayer.setDataSource(PlaybackService.this, uri);
+                    mMediaPlayer.prepareAsync(); // calls onPrepared() when complete
+                    Timber.i("Buffering audio stream");
+                    mPlaybackState = updatePlaybackState(PlaybackStateCompat.STATE_BUFFERING);
+                    mMediaSession.setPlaybackState(mPlaybackState);
+                    // set the station metadata
+                    mMediaSession.setMetadata(new MediaMetadataCompat.Builder()
+                                    .putString(MediaMetadataCompat.METADATA_KEY_DISPLAY_TITLE, extras.getString(EXTRA_STATION_NAME))
+                                    .putString(MediaMetadataCompat.METADATA_KEY_DISPLAY_SUBTITLE, extras.getString(EXTRA_STATION_SLUG))
+                                    .putString(MediaMetadataCompat.METADATA_KEY_DISPLAY_DESCRIPTION, extras.getString(EXTRA_STATION_COUNTRY))
+                                    .putString(MediaMetadataCompat.METADATA_KEY_ART_URI, extras.getString(EXTRA_STATION_IMAGE_URL))
+                                    .putString(MediaMetadataCompat.METADATA_KEY_DISPLAY_ICON_URI, extras.getString(EXTRA_STATION_THUMB_URL))
+                                    .build());
+                    updateNotification();
+                    // acquire wifi lock to prevent wifi going to sleep while playing
+                    mWifiLock.acquire();
                 }
 
             } catch (IOException e) {
@@ -296,11 +279,6 @@ public class PlaybackService extends Service implements
 
         }
 
-        @Override
-        public void onPlay() {
-            super.onPlay();
-            // TODO Required??
-        }
 
         @Override
         public void onStop() {
@@ -309,8 +287,6 @@ public class PlaybackService extends Service implements
                     state == PlaybackStateCompat.STATE_BUFFERING) {
 
                 Timber.i("Stopping audio playback");
-                //mMediaPlayer.updateSession();
-                //mMediaSession.setPlaybackState(updatePlaybackState(PlaybackStateCompat.STATE_STOPPED));
                 mMediaPlayer.stop();
                 updateSession(PlaybackStateCompat.STATE_STOPPED, PlaybackServiceEvent.ON_STOP);
                 updateNotification();
@@ -358,13 +334,14 @@ public class PlaybackService extends Service implements
     private void updateSession(int playbackState, String event) {
         mAudioManager.abandonAudioFocus(this);
         mMediaSession.setActive(false);
-        unregisterReceiver(mNoisyBroadcastReceiver);
+
+        // unregister noisy broadcast receiver
+        unregisterNoisy();
 
         mPlaybackState = updatePlaybackState(playbackState);
         mMediaSession.setPlaybackState(mPlaybackState);
         RadioPlayerApplication.postToBus(new PlaybackServiceEvent(event));
     }
-
 
     private void releaseMediaPlayer() {
         if(mMediaPlayer != null) {
@@ -396,11 +373,25 @@ public class PlaybackService extends Service implements
     }
 
 
+    private void registerNoisy() {
+        if(!mIsRegistered) {
+            registerReceiver(mNoisyBroadcastReceiver, mNoisyIntentFilter);
+            mIsRegistered = true;
+        }
+    }
+
+    private void unregisterNoisy() {
+        if(mIsRegistered) {
+            unregisterReceiver(mNoisyBroadcastReceiver);
+            mIsRegistered = false;
+        }
+    }
+
+
     // TODO Notification & Notification.Builder
     private void updateNotification() {
         Timber.i("Update notification, if one existed");
     }
-
 
 
 }
