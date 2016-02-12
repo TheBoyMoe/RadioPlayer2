@@ -144,6 +144,7 @@ public class StationFragment extends BaseFragment implements AdapterView.OnItemC
         }
     }
 
+
     private void setStationList() {
         // pass a copy of the station list to the adapter
         List<Station> list = new ArrayList<>(StationDataCache.getStationDataCache().getStationList());

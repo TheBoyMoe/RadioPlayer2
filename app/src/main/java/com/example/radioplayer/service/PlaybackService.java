@@ -22,9 +22,15 @@ import android.support.v4.media.session.MediaSessionCompat;
 import android.support.v4.media.session.PlaybackStateCompat;
 
 import com.example.radioplayer.RadioPlayerApplication;
+import com.example.radioplayer.data.StationDataCache;
+import com.example.radioplayer.event.MessageEvent;
 import com.example.radioplayer.event.PlaybackServiceEvent;
+import com.example.radioplayer.event.QueuePositionEvent;
+import com.example.radioplayer.model.Station;
+import com.example.radioplayer.util.Utils;
 
 import java.io.IOException;
+import java.util.List;
 
 import timber.log.Timber;
 
@@ -42,6 +48,7 @@ public class PlaybackService extends Service implements
     public static final String EXTRA_STATION_COUNTRY = "station_country";
     public static final String EXTRA_STATION_IMAGE_URL = "station_image_url";
     public static final String EXTRA_STATION_THUMB_URL = "station_thumb_url";
+    public static final String EXTRA_STATION_QUEUE_POSITION = "queue_position";
     public static final String ACTION_PLAY = "play";
     public static final String ACTION_STOP = "updateSession";
     public static final String ACTION_NEXT = "next";
@@ -55,6 +62,8 @@ public class PlaybackService extends Service implements
     private MediaPlayer mMediaPlayer;
     private Binder mBinder = new ServiceBinder();
     private boolean mIsRegistered;
+    private List<Station> mQueue;
+    private int mQueuePosition;
 
     private final IntentFilter mNoisyIntentFilter =
             new IntentFilter(AudioManager.ACTION_AUDIO_BECOMING_NOISY);
@@ -129,6 +138,9 @@ public class PlaybackService extends Service implements
     @Override
     public void onCreate() {
         super.onCreate();
+
+        mQueue = StationDataCache.getStationDataCache().getStationList();
+        Timber.i("Current queue: %s", mQueue);
 
         mPlaybackState = updatePlaybackState(PlaybackStateCompat.STATE_NONE);
 
@@ -242,6 +254,7 @@ public class PlaybackService extends Service implements
         @Override
         public void onPlayFromSearch(String query, Bundle extras) {
             Uri uri = extras.getParcelable(EXTRA_STATION_URI);
+            mQueuePosition = extras.getInt(EXTRA_STATION_QUEUE_POSITION);
             onPlayFromUri(uri, extras);
         }
 
@@ -301,16 +314,76 @@ public class PlaybackService extends Service implements
         @Override
         public void onSkipToNext() {
             super.onSkipToNext();
-            // TODO
+            ++mQueuePosition;
+            checkQueuePosition();
         }
 
 
         @Override
         public void onSkipToPrevious() {
             super.onSkipToPrevious();
-            // TODO
+            --mQueuePosition;
+            checkQueuePosition();
         }
 
+    }
+
+    private void checkQueuePosition() {
+
+        if(mQueuePosition >= 0 && mQueuePosition < mQueue.size()) {
+            playFromQueue();
+            RadioPlayerApplication.postToBus(new QueuePositionEvent(mQueuePosition));
+        } else {
+            // DEBUG
+            RadioPlayerApplication.postToBus(new MessageEvent("Index out of bounds"));
+        }
+    }
+
+
+    private void playFromQueue() {
+
+        Station stn = mQueue.get(mQueuePosition);
+        String name = stn.getName() != null? stn.getName() : "";
+        String slug = stn.getSlug() != null? stn.getSlug() : "";
+        String country = stn.getCountry() != null? stn.getCountry() : "";
+        String imageUrl = stn.getImage().getUrl() != null? stn.getImage().getUrl() : "";
+        String thumbUrl = stn.getImage().getThumb().getUrl() != null? stn.getImage().getThumb().getUrl() : "";
+
+        String url = Utils.getStream(stn);
+        if(url != null) {
+            Uri uri = Uri.parse(url);
+            Timber.i("Url: %s, station: %s", url, stn.getName());
+            try {
+                int state = mPlaybackState.getState();
+                if(state == PlaybackStateCompat.STATE_NONE || state == PlaybackStateCompat.STATE_STOPPED) {
+
+                    Timber.i("MediaPlayer: %s", mMediaPlayer);
+                    mMediaPlayer.reset();
+                    mMediaPlayer.setDataSource(PlaybackService.this, uri);
+                    mMediaPlayer.prepareAsync(); // calls onPrepared() when complete
+                    Timber.i("Buffering audio stream");
+                    mPlaybackState = updatePlaybackState(PlaybackStateCompat.STATE_BUFFERING);
+                    mMediaSession.setPlaybackState(mPlaybackState);
+                    // set the station metadata
+                    mMediaSession.setMetadata(new MediaMetadataCompat.Builder()
+                            .putString(MediaMetadataCompat.METADATA_KEY_DISPLAY_TITLE, name)
+                            .putString(MediaMetadataCompat.METADATA_KEY_DISPLAY_SUBTITLE, slug)
+                            .putString(MediaMetadataCompat.METADATA_KEY_DISPLAY_DESCRIPTION, country)
+                            .putString(MediaMetadataCompat.METADATA_KEY_ART_URI, imageUrl)
+                            .putString(MediaMetadataCompat.METADATA_KEY_DISPLAY_ICON_URI, thumbUrl)
+                            .build());
+                    updateNotification();
+                    // acquire wifi lock to prevent wifi going to sleep while playing
+                    mWifiLock.acquire();
+                }
+
+            } catch (IOException e) {
+                Timber.e("Error buffering audio stream");
+            }
+        } else {
+            // post message to player
+            RadioPlayerApplication.postToBus(new PlaybackServiceEvent(PlaybackServiceEvent.ON_NO_STREAM_FOUND));
+        }
     }
 
 
