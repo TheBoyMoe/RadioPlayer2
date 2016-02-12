@@ -15,7 +15,7 @@ import timber.log.Timber;
 public class StationDataCache {
 
     private static StationDataCache sDataCache;
-    private LinkedList<Station> mList = new LinkedList<>();
+    private List<Station> mList = new ArrayList<>();
 
     private StationDataCache() {}
 
@@ -26,11 +26,11 @@ public class StationDataCache {
         return sDataCache;
     }
 
-    public LinkedList<Station> getStationList() {
+    public List<Station> getStationList() {
         return mList;
     }
 
-    public void setStationList(LinkedList<Station> list) {
+    public void setStationList(ArrayList<Station> list) {
         mList.addAll(list); // add to the current cache
     }
 

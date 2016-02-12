@@ -2,6 +2,7 @@ package com.example.radioplayer.fragment;
 
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -23,6 +24,7 @@ import com.example.radioplayer.util.Utils;
 import com.squareup.otto.Subscribe;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
@@ -33,11 +35,11 @@ import timber.log.Timber;
  * References:
  * [1] https://guides.codepath.com/android/Implementing-Pull-to-Refresh-Guide
  */
-public class StationFragment extends BaseFragment{
+public class StationFragment extends BaseFragment implements AdapterView.OnItemClickListener{
 
     public static final String BUNDLE_CATEGORY_ID = "category_id";
     private static final String BUNDLE_PAGE_NUMBER = "page_number";
-    private List<Station> mStationList = new LinkedList<>();
+    private List<Station> mStationList = new ArrayList<>();
     private StationArrayAdapter mAdapter;
     private Long mCategoryId;
     private boolean mIsStarted = false;
@@ -73,13 +75,9 @@ public class StationFragment extends BaseFragment{
 
         mAdapter = new StationArrayAdapter(mStationList);
         mListView.setAdapter(mAdapter);
-        mListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                RadioPlayerApplication.postToBus(new OnClickEvent(OnClickEvent.STATION_ON_CLICK_EVENT, position));
-            }
-        });
+        mListView.setOnItemClickListener(this);
 
+        // set the color on the pulldown icon
         mRefreshLayout.setColorSchemeResources(
                 R.color.color_swipe_1,
                 R.color.color_swipe_2,
@@ -101,7 +99,6 @@ public class StationFragment extends BaseFragment{
         mRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
-                // TODO - increment counter and download the next page
                 downloadStationData();
             }
         });
@@ -109,11 +106,21 @@ public class StationFragment extends BaseFragment{
         return view;
     }
 
+
+    @Override
+    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+        // reverse the item position clicked on to match the adapter
+        position = (mStationList.size() - 1) - position;
+        RadioPlayerApplication.postToBus(new OnClickEvent(OnClickEvent.STATION_ON_CLICK_EVENT, position));
+    }
+
+
     @Override
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
         outState.putInt(BUNDLE_PAGE_NUMBER, mPageCount);
     }
+
 
     private void downloadStationData() {
         if(Utils.isClientConnected(getActivity())) {
@@ -137,14 +144,13 @@ public class StationFragment extends BaseFragment{
             mRefreshLayout.setRefreshing(false);
             // refresh the station list with the most up-to-date list from the cache
             mStationList.clear();
-            // TODO reverse order of list
             setStationList();
         }
     }
 
     private void setStationList() {
-        List<Station> list = new LinkedList<>(StationDataCache.getStationDataCache().getStationList());
-        Collections.reverse(list);
+        // pass a copy of the station list to the adapter
+        List<Station> list = new ArrayList<>(StationDataCache.getStationDataCache().getStationList());
         mStationList.addAll(list);
         mAdapter.notifyDataSetChanged();
     }
@@ -153,9 +159,11 @@ public class StationFragment extends BaseFragment{
     // Custom ArrayAdapter and ViewHolder
     private class StationArrayAdapter extends ArrayAdapter<Station> {
 
+        private List<Station> list;
 
         public StationArrayAdapter(List<Station> list) {
             super(getActivity(), 0, list);
+            this.list = list;
         }
 
         @Override
@@ -174,6 +182,13 @@ public class StationFragment extends BaseFragment{
             holder.bindView(getItem(position));
 
             return convertView;
+        }
+
+        @Override
+        public Station getItem(int position) {
+            // display the list view in reverse order
+            int item = (list.size() - 1) - position;
+            return list.get(item);
         }
     }
 

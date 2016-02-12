@@ -51,7 +51,7 @@ public class StationThread extends Thread{
     @Override
     public void run() {
         Timber.i("Executing station thread");
-        int resultsPerPage = 12;
+        int resultsPerPage = 4;
 
         HttpURLConnection con = null;
         URL url = null;
@@ -76,7 +76,7 @@ public class StationThread extends Thread{
                 Timber.i("Downloaded list: %s", stationList.toString());
 
                 // stash the station list in the data cache
-                StationDataCache.getStationDataCache().setStationList(new LinkedList<>(stationList));
+                StationDataCache.getStationDataCache().setStationList(new ArrayList<>(stationList));
                 // let the station fragment know the station list has been updated
                 RadioPlayerApplication.postToBus(new StationThreadCompletionEvent(true));
 
