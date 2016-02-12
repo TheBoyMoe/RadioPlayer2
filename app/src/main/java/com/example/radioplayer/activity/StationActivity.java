@@ -11,6 +11,7 @@ import com.example.radioplayer.RadioPlayerApplication;
 import com.example.radioplayer.event.MessageEvent;
 import com.example.radioplayer.event.OnClickEvent;
 import com.example.radioplayer.fragment.StationFragment;
+import com.example.radioplayer.model.Category;
 import com.example.radioplayer.util.Utils;
 import com.squareup.otto.Subscribe;
 
@@ -19,6 +20,7 @@ import timber.log.Timber;
 public class StationActivity extends AppCompatActivity{
 
     public static final String EXTRA_CATEGORY_ID = "category_id_extra";
+    public static final String EXTRA_CATEGORY_TITLE = "category_title";
 
     private StationFragment mStationFragment;
     private CoordinatorLayout mCoordinatorLayout;
@@ -29,12 +31,15 @@ public class StationActivity extends AppCompatActivity{
         setContentView(R.layout.activity_main_station);
         mCoordinatorLayout = (CoordinatorLayout) findViewById(R.id.coordinator_layout);
 
+        Long id = getIntent().getLongExtra(EXTRA_CATEGORY_ID, 0);
+        String title = getIntent().getStringExtra(EXTRA_CATEGORY_TITLE);
+
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-        if(getSupportActionBar() != null)
+        if(getSupportActionBar() != null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-
-        Long id = getIntent().getLongExtra(EXTRA_CATEGORY_ID, 0);
+            getSupportActionBar().setTitle(title + " radio stations");
+        }
 
         // load the UI fragment
         mStationFragment =

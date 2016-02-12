@@ -67,8 +67,10 @@ public class PlayerActivity extends AppCompatActivity implements
         // set up the toolbar
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-        if(getSupportActionBar() != null)
+        if(getSupportActionBar() != null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+            getSupportActionBar().setTitle("Radio Player");
+        }
 
         // setup player controls elements
         mPlayStopBtn = (ImageButton) findViewById(R.id.play_stop_button);

@@ -2,7 +2,6 @@ package com.example.radioplayer.fragment;
 
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -24,9 +23,6 @@ import com.example.radioplayer.util.Utils;
 import com.squareup.otto.Subscribe;
 
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.LinkedList;
 import java.util.List;
 
 import timber.log.Timber;

@@ -106,6 +106,7 @@ public class MainActivity extends AppCompatActivity {
         // deal with clicks to category items
         if(event.getClickEvent().equals(OnClickEvent.CATEGORY_ON_CLICK_EVENT)) {
             mCategoryId = mCategoryDataFragment.getCategoryDataItem(event.getPosition()).getId();
+            String categoryTitle = mCategoryDataFragment.getCategoryDataItem(event.getPosition()).getTitle();
 
             // clear the data cache - downloading new category station list
             StationDataCache.getStationDataCache().clearDataCache();
@@ -121,6 +122,7 @@ public class MainActivity extends AppCompatActivity {
                 // on phone launch the station activity
                 Intent intent = new Intent(this, StationActivity.class);
                 intent.putExtra(StationActivity.EXTRA_CATEGORY_ID, mCategoryId);
+                intent.putExtra(StationActivity.EXTRA_CATEGORY_TITLE, categoryTitle);
                 startActivity(intent);
             }
 
