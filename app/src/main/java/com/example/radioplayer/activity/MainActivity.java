@@ -11,6 +11,7 @@ import android.view.View;
 
 import com.example.radioplayer.R;
 import com.example.radioplayer.RadioPlayerApplication;
+import com.example.radioplayer.data.StationDataCache;
 import com.example.radioplayer.event.DataModelUpdateEvent;
 import com.example.radioplayer.event.MessageEvent;
 import com.example.radioplayer.event.OnClickEvent;
@@ -105,6 +106,9 @@ public class MainActivity extends AppCompatActivity {
         // deal with clicks to category items
         if(event.getClickEvent().equals(OnClickEvent.CATEGORY_ON_CLICK_EVENT)) {
             mCategoryId = mCategoryDataFragment.getCategoryDataItem(event.getPosition()).getId();
+
+            // clear the data cache - downloading new category station list
+            StationDataCache.getStationDataCache().clearDataCache();
 
             // on tablets load the station list fragment
             if(mDualPane) {

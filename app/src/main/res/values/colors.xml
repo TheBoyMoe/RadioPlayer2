@@ -8,4 +8,11 @@
     <color name="colorSecondaryText">@color/secondary_text</color>
     <color name="colorIcons">@color/icons</color>
     <color name="colorDivider">@color/divider</color>
+
+    <!-- Color Swipe for SwipeRefresh on StationListFragment -->
+    <color name="color_swipe_1">@color/md_pink_300</color>
+    <color name="color_swipe_2">@color/md_pink_400</color>
+    <color name="color_swipe_3">@color/md_pink_600</color>
+    <color name="color_swipe_4">@color/md_pink_800</color>
+
 </resources>

@@ -14,6 +14,8 @@ import com.example.radioplayer.fragment.StationFragment;
 import com.example.radioplayer.util.Utils;
 import com.squareup.otto.Subscribe;
 
+import timber.log.Timber;
+
 public class StationActivity extends AppCompatActivity{
 
     public static final String EXTRA_CATEGORY_ID = "category_id_extra";

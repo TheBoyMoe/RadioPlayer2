@@ -23,7 +23,6 @@ import android.support.v4.media.session.PlaybackStateCompat;
 
 import com.example.radioplayer.RadioPlayerApplication;
 import com.example.radioplayer.event.PlaybackServiceEvent;
-import com.example.radioplayer.util.Utils;
 
 import java.io.IOException;
 
