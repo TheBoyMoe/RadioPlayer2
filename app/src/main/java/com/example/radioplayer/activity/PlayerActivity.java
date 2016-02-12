@@ -21,6 +21,7 @@ import com.example.radioplayer.R;
 import com.example.radioplayer.RadioPlayerApplication;
 import com.example.radioplayer.data.StationDataCache;
 import com.example.radioplayer.event.PlaybackServiceEvent;
+import com.example.radioplayer.event.QueuePositionEvent;
 import com.example.radioplayer.model.Station;
 import com.example.radioplayer.model.Stream;
 import com.example.radioplayer.service.PlaybackService;
@@ -35,12 +36,8 @@ import timber.log.Timber;
 public class PlayerActivity extends AppCompatActivity implements
         View.OnClickListener, ServiceConnection{
 
-
     private static final String BUNDLE_STATE = "state";
-    private static final String BUNDLE_CURRENT_STATION = "current_station";
-
     public static final String BUNDLE_QUEUE_POSITION = "queue_position";
-    public static final String BUNDLE_STATION_QUEUE = "station_queue"; // station list
 
     private TextView mStationTitle;
     private ImageButton mPlayStopBtn;
@@ -49,11 +46,9 @@ public class PlayerActivity extends AppCompatActivity implements
     private ProgressBar mProgressBar;
     private CoordinatorLayout mCoordinatorLayout;
     private MediaControllerCompat mMediaController;
-    private Station mStation;
     private boolean mFirstTimeIn = true;
     private List<Station> mQueue;
     private int mQueuePosition;
-
 
 
     @Override
@@ -67,8 +62,10 @@ public class PlayerActivity extends AppCompatActivity implements
         // set up the toolbar
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-        if(getSupportActionBar() != null)
+        if(getSupportActionBar() != null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+            getSupportActionBar().setTitle("Radio Player");
+        }
 
         // setup player controls elements
         mPlayStopBtn = (ImageButton) findViewById(R.id.play_stop_button);
@@ -100,8 +97,7 @@ public class PlayerActivity extends AppCompatActivity implements
         }
 
         // set the station  and title
-        mStation = mQueue.get(mQueuePosition);
-        mStationTitle.setText(mStation.getName());
+        mStationTitle.setText(mQueue.get(mQueuePosition).getName());
 
         // hide prev/next btns to prevent use if starting from the first or last station
         if(mQueuePosition == 0) {
@@ -124,7 +120,6 @@ public class PlayerActivity extends AppCompatActivity implements
         int state = mMediaController.getPlaybackState().getState();
         outState.putInt(BUNDLE_STATE, state);
         outState.putInt(BUNDLE_QUEUE_POSITION, mQueuePosition);
-        outState.putParcelable(BUNDLE_CURRENT_STATION, mStation);
     }
 
     @Override
@@ -154,32 +149,33 @@ public class PlayerActivity extends AppCompatActivity implements
         switch(view.getId()) {
 
             case R.id.play_stop_button:
+                // start playback
                 if(state == PlaybackStateCompat.STATE_NONE || state == PlaybackStateCompat.STATE_STOPPED) {
-                    // start playback
                     Timber.i("Clicked play");
                     playFromStationUri();
-                } else if(state == PlaybackStateCompat.STATE_BUFFERING || state == PlaybackStateCompat.STATE_PLAYING){
-                    // stop playback // FIXME calling stop when buffering causes media player error(-38, 0)
+                // stop playback // FIXME calling stop when buffering causes media player to stop in state 4, error(-38, 0)
+                } else if(state == PlaybackStateCompat.STATE_BUFFERING
+                        || state == PlaybackStateCompat.STATE_PLAYING
+                        || state == PlaybackStateCompat.STATE_CONNECTING){
                     mMediaController.getTransportControls().stop();
                     Timber.i("Clicked stop");
                 }
                 break;
 
-            // TODO use mediaController skipToNExt() and skipToPrevious()
             case R.id.previous_button:
                 if(state == PlaybackStateCompat.STATE_BUFFERING || state == PlaybackStateCompat.STATE_PLAYING) {
                     mMediaController.getTransportControls().stop();
                 }
-                --mQueuePosition;
-                updatePlayer();
+                mMediaController.getTransportControls().skipToPrevious();
+                mProgressBar.setVisibility(View.VISIBLE);
                 break;
 
             case R.id.next_button:
                 if(state == PlaybackStateCompat.STATE_BUFFERING || state == PlaybackStateCompat.STATE_PLAYING) {
                     mMediaController.getTransportControls().stop();
                 }
-                ++mQueuePosition;
-                updatePlayer();
+                mMediaController.getTransportControls().skipToNext();
+                mProgressBar.setVisibility(View.VISIBLE);
                 break;
         }
     }
@@ -254,20 +250,37 @@ public class PlayerActivity extends AppCompatActivity implements
     public void getMessageEvent(PlaybackServiceEvent event) {
         String message = event.getMessage();
         switch (message) {
-            case PlaybackServiceEvent.ON_BUFFERING_COMPLETE:
             case PlaybackServiceEvent.ON_PLAYBACK_ERROR:
             case PlaybackServiceEvent.ON_PLAYBACK_COMPLETION:
             case PlaybackServiceEvent.ON_AUDIO_FOCUS_LOSS:
             case PlaybackServiceEvent.ON_BECOMING_NOISY:
+                mPlayStopBtn.setImageResource(R.drawable.action_play);
+            case PlaybackServiceEvent.ON_BUFFERING_COMPLETE:
                 mProgressBar.setVisibility(View.GONE);
                 displayMessage(message);
                 break;
-
-            case PlaybackServiceEvent.ON_STOP:
-                // ??
-                break;
+            // DEBUG
+            default:
+                displayMessage(message);
         }
     }
+
+    @Subscribe
+    public void getQueuePositionEvent(QueuePositionEvent event) {
+        // update queue position and station title
+        mQueuePosition = event.getQueuePosition();
+        mStationTitle.setText(mQueue.get(mQueuePosition).getName());
+        if(mQueuePosition == 0) {
+            mPrevBtn.setVisibility(View.GONE);
+        } else if(mQueuePosition == mQueue.size() - 1){
+            mNextBtn.setVisibility(View.GONE);
+        } else {
+            mNextBtn.setVisibility(View.VISIBLE);
+            mPrevBtn.setVisibility(View.VISIBLE);
+        }
+        Timber.i("Queue position: %s", mQueuePosition);
+    }
+
 
 
     private void displayMessage(String message) {
@@ -275,58 +288,19 @@ public class PlayerActivity extends AppCompatActivity implements
     }
 
 
-    // retrieve the stream url from the station object with a status of 1 or greater
-    private String getStream(Station stn) {
-
-        String url = null;
-        ArrayList<Stream> streams = (ArrayList<Stream>) stn.getStreams();
-        int status;
-        for (Stream stream : streams) {
-            status = stream.getStatus();
-            if(status >= 0) {
-                url = stream.getStream();
-                if(url != null && !url.isEmpty())
-                    break;
-            }
-        }
-        return url;
-    }
-
-
-    private void updatePlayer() {
-        // ensure index not out of bounds
-        if(mQueuePosition >=0 && mQueuePosition < mQueue.size()) {
-
-            mPrevBtn.setVisibility(View.VISIBLE);
-            mNextBtn.setVisibility(View.VISIBLE);
-            mStation = mQueue.get(mQueuePosition);
-            mStationTitle.setText(mStation.getName());
-            playFromStationUri();
-
-            // update prev/next btns if req'd
-            if(mQueuePosition == 0) {
-                mPrevBtn.setVisibility(View.GONE);
-            }
-            if(mQueuePosition == mQueue.size() - 1) {
-                mNextBtn.setVisibility(View.GONE);
-            }
-        }
-
-    }
-
-
     private void playFromStationUri() {
-        if(mStation != null) {
+        Station stn = mQueue.get(mQueuePosition);
+        if(stn != null) {
 
-            String name = mStation.getName() != null? mStation.getName() : "";
-            String slug = mStation.getSlug() != null? mStation.getSlug() : "";
-            String country = mStation.getCountry() != null? mStation.getCountry() : "";
-            String imageUrl = mStation.getImage().getUrl() != null? mStation.getImage().getUrl() : "";
-            String thumbUrl = mStation.getImage().getThumb().getUrl() != null? mStation.getImage().getThumb().getUrl() : "";
-            String url = getStream(mStation);
+            String name = stn.getName() != null? stn.getName() : "";
+            String slug = stn.getSlug() != null? stn.getSlug() : "";
+            String country = stn.getCountry() != null? stn.getCountry() : "";
+            String imageUrl = stn.getImage().getUrl() != null? stn.getImage().getUrl() : "";
+            String thumbUrl = stn.getImage().getThumb().getUrl() != null? stn.getImage().getThumb().getUrl() : "";
+            String url = Utils.getStream(stn);
 
             if(url != null) {
-                Timber.i("Url: %s, station: %s", url, mStation.getName());
+                Timber.i("Url: %s, station: %s", url, stn.getName());
                 Uri uri = Uri.parse(url);
                 Bundle extras = new Bundle();
                 //extras.putParcelable(PlaybackService.EXTRA_STATION, mStation); // PlaybackService can't unmarshall the station object
@@ -336,6 +310,7 @@ public class PlayerActivity extends AppCompatActivity implements
                 extras.putString(PlaybackService.EXTRA_STATION_COUNTRY, country);
                 extras.putString(PlaybackService.EXTRA_STATION_IMAGE_URL, imageUrl);
                 extras.putString(PlaybackService.EXTRA_STATION_THUMB_URL, thumbUrl);
+                extras.putInt(PlaybackService.EXTRA_STATION_QUEUE_POSITION, mQueuePosition);
 
                 // playFromUri() works on emulators api 16-19, not on api 21+
                 //mMediaController.getTransportControls().playFromUri(uri, extras);
@@ -345,7 +320,7 @@ public class PlayerActivity extends AppCompatActivity implements
                 mProgressBar.setVisibility(View.VISIBLE);
 
             } else {
-                displayMessage("No stream found, try a different station");
+                displayMessage(PlaybackServiceEvent.ON_NO_STREAM_FOUND);
             }
         }
     }

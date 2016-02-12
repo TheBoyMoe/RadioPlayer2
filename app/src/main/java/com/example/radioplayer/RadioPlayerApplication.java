@@ -5,6 +5,7 @@ import android.os.Handler;
 import android.os.Looper;
 
 import com.example.radioplayer.event.BaseEvent;
+import com.squareup.leakcanary.LeakCanary;
 import com.squareup.otto.Bus;
 
 import timber.log.Timber;
@@ -25,9 +26,13 @@ public class RadioPlayerApplication extends Application{
     @Override
     public void onCreate() {
         super.onCreate();
+
         // enable Timber debugging
         if(BuildConfig.DEBUG)
             Timber.plant(new Timber.DebugTree());
+
+        // detect memory leaks
+        LeakCanary.install(this);
     }
 
     public Bus getBus() {

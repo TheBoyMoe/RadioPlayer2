@@ -11,6 +11,11 @@ import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Toast;
 
+import com.example.radioplayer.model.Station;
+import com.example.radioplayer.model.Stream;
+
+import java.util.ArrayList;
+
 import timber.log.Timber;
 
 public class Utils {
@@ -57,6 +62,24 @@ public class Utils {
         Timber.i("Playback state connecting, code %d", PlaybackStateCompat.STATE_CONNECTING);
         Timber.i("Playback state skip to previous, code %d", PlaybackStateCompat.STATE_SKIPPING_TO_PREVIOUS);
         Timber.i("Playback state skip to next, code %d", PlaybackStateCompat.STATE_SKIPPING_TO_NEXT);
+    }
+
+
+    // retrieve the stream url from the station object with a status of 1 or greater
+    public static String getStream(Station stn) {
+
+        String url = null;
+        ArrayList<Stream> streams = (ArrayList<Stream>) stn.getStreams();
+        int status;
+        for (Stream stream : streams) {
+            status = stream.getStatus();
+            if(status >= 0) {
+                url = stream.getStream();
+                if(url != null && !url.isEmpty())
+                    break;
+            }
+        }
+        return url;
     }
 
 
