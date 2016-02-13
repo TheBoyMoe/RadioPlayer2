@@ -2,23 +2,20 @@ package com.example.radioplayer.event;
 
 public class StationThreadCompletionEvent extends BaseEvent{
 
-//    private List<Station> mStationList;
-//
-//    public StationThreadCompletionEvent(List<Station> stationList) {
-//        mStationList = stationList;
-//    }
-//
-//    public List<Station> getStationList() {
-//        return mStationList;
-//    }
-
     private boolean mThreadComplete;
+    private boolean mDownloadComplete;
 
-    public StationThreadCompletionEvent(boolean threadComplete) {
+    public StationThreadCompletionEvent(boolean threadComplete, boolean downloadComplete) {
         mThreadComplete = threadComplete;
+        mDownloadComplete = downloadComplete;
     }
 
     public boolean isThreadComplete() {
         return mThreadComplete;
     }
+
+    public boolean isDownloadComplete() {
+        return mDownloadComplete;
+    }
+
 }

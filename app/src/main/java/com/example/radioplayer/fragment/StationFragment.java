@@ -142,6 +142,9 @@ public class StationFragment extends BaseFragment implements AdapterView.OnItemC
             mStationList.clear();
             setStationList();
         }
+        if(event.isDownloadComplete()) {
+            Utils.showSnackbar(mListView, "No more stations found, " + mStationList.size() + " found in total");
+        }
     }
 
 
