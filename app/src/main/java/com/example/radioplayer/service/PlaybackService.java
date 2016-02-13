@@ -1,10 +1,14 @@
 package com.example.radioplayer.service;
 
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.app.Service;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.net.Uri;
@@ -20,8 +24,11 @@ import android.support.v4.media.session.MediaButtonReceiver;
 import android.support.v4.media.session.MediaControllerCompat;
 import android.support.v4.media.session.MediaSessionCompat;
 import android.support.v4.media.session.PlaybackStateCompat;
+import android.support.v7.app.NotificationCompat;
 
+import com.example.radioplayer.R;
 import com.example.radioplayer.RadioPlayerApplication;
+import com.example.radioplayer.activity.PlayerActivity;
 import com.example.radioplayer.data.StationDataCache;
 import com.example.radioplayer.event.MessageEvent;
 import com.example.radioplayer.event.PlaybackServiceEvent;
@@ -41,7 +48,8 @@ public class PlaybackService extends Service implements
         AudioManager.OnAudioFocusChangeListener{
 
     private static final String LOG_TAG = "PlaybackService";
-    //public static final String EXTRA_STATION = "station";
+    private static final int NOTIFY_ID = 101;
+
     public static final String EXTRA_STATION_URI = "station_uri";
     public static final String EXTRA_STATION_NAME = "station_name";
     public static final String EXTRA_STATION_SLUG = "station_slug";
@@ -53,7 +61,9 @@ public class PlaybackService extends Service implements
     public static final String ACTION_STOP = "updateSession";
     public static final String ACTION_NEXT = "next";
     public static final String ACTION_PREV = "prev";
+    public static final String ACTION_OPEN = "open";
 
+    private NotificationManager mNotificationManager;
     private WifiManager.WifiLock mWifiLock;
     private AudioManager mAudioManager;
     private MediaSessionCompat mMediaSession;
@@ -195,7 +205,7 @@ public class PlaybackService extends Service implements
             Timber.i("Focus lost, stopping playback");
             mMediaPlayer.stop();
             updateSession(PlaybackStateCompat.STATE_STOPPED, PlaybackServiceEvent.ON_AUDIO_FOCUS_LOSS);
-            updateNotification(); // FIXME ??
+            raiseNotification(); // FIXME ??
         }
     }
 
@@ -220,7 +230,7 @@ public class PlaybackService extends Service implements
             // update playback state
             mPlaybackState = updatePlaybackState(PlaybackStateCompat.STATE_PLAYING);
             mMediaSession.setPlaybackState(mPlaybackState);
-            updateNotification();
+            raiseNotification();
 
             // post event, allowing the PlayerActivity to hide the progress bar
             RadioPlayerApplication.postToBus(new PlaybackServiceEvent(PlaybackServiceEvent.ON_BUFFERING_COMPLETE));
@@ -280,7 +290,7 @@ public class PlaybackService extends Service implements
                                     .putString(MediaMetadataCompat.METADATA_KEY_ART_URI, extras.getString(EXTRA_STATION_IMAGE_URL))
                                     .putString(MediaMetadataCompat.METADATA_KEY_DISPLAY_ICON_URI, extras.getString(EXTRA_STATION_THUMB_URL))
                                     .build());
-                    updateNotification();
+                    raiseNotification();
                     // acquire wifi lock to prevent wifi going to sleep while playing
                     mWifiLock.acquire();
                 }
@@ -301,7 +311,7 @@ public class PlaybackService extends Service implements
                 Timber.i("Stopping audio playback");
                 mMediaPlayer.stop();
                 updateSession(PlaybackStateCompat.STATE_STOPPED, PlaybackServiceEvent.ON_STOP);
-                updateNotification();
+                raiseNotification();
 
             }
             // if we're buffering post an event so the progress bar can be hidden
@@ -372,7 +382,7 @@ public class PlaybackService extends Service implements
                             .putString(MediaMetadataCompat.METADATA_KEY_ART_URI, imageUrl)
                             .putString(MediaMetadataCompat.METADATA_KEY_DISPLAY_ICON_URI, thumbUrl)
                             .build());
-                    updateNotification();
+                    raiseNotification();
                     // acquire wifi lock to prevent wifi going to sleep while playing
                     mWifiLock.acquire();
                 }
@@ -400,7 +410,6 @@ public class PlaybackService extends Service implements
         // tell the system it needs to stay on
         mMediaPlayer.setWakeMode(getApplicationContext(), PowerManager.PARTIAL_WAKE_LOCK);
     }
-
 
     // abandon focus, set media btn target to false, unregister noisy receiver and update playback state
     private void updateSession(int playbackState, String event) {
@@ -436,6 +445,12 @@ public class PlaybackService extends Service implements
             mMediaSession.release();
             mMediaSession = null;
         }
+
+        // cancel notification
+        mNotificationManager.cancel(NOTIFY_ID);
+
+        // FIXME ?? place in stop
+        //stopForeground(true);
     }
 
     private PlaybackStateCompat updatePlaybackState(int playbackState) {
@@ -443,7 +458,6 @@ public class PlaybackService extends Service implements
                 .setState(playbackState, 0, 1.0f)
                 .build();
     }
-
 
     private void registerNoisy() {
         if(!mIsRegistered) {
@@ -460,10 +474,69 @@ public class PlaybackService extends Service implements
     }
 
 
-    // TODO Notification & Notification.Builder
-    private void updateNotification() {
-        Timber.i("Update notification, if one existed");
+    private void raiseNotification() {
+        // Set the expanded notification layout using MediaStyle
+        NotificationCompat.MediaStyle style = new NotificationCompat.MediaStyle();
+
+        // define the bitmap used for the notification
+        Bitmap bm = BitmapFactory.decodeResource(getResources(), R.mipmap.ic_launcher);
+
+        // build and display the notification
+        NotificationCompat.Builder notification = new NotificationCompat.Builder(this);
+        notification.setTicker(getString(R.string.notification_playing_stream));
+        notification.setSmallIcon(android.R.drawable.ic_media_play);
+        notification.setContentTitle("Dean Martin");
+        notification.setContentText("Kick in the Head");
+        notification.setLargeIcon(bm);
+        notification.setStyle(style);
+
+        // define the action upon tapping the notification
+        Intent launchIntent = new Intent(getApplicationContext(), PlayerActivity.class);
+        launchIntent.setAction(ACTION_OPEN);
+        PendingIntent returnToPlayer = PendingIntent.getActivity(this, 0, launchIntent, 0);
+        notification.setContentIntent(returnToPlayer);
+
+        // TODO  -  wire up the action buttons
+        notification.addAction(generateAction
+                (android.R.drawable.ic_media_previous, "Previous", ACTION_PREV));
+
+        int state = mPlaybackState.getState();
+        if(state == PlaybackStateCompat.STATE_PLAYING)
+            // TODO change pause to stop icon
+            notification.addAction(generateAction
+                    (android.R.drawable.ic_media_pause, "Stop", ACTION_STOP));
+        else
+            notification.addAction(generateAction
+                    (android.R.drawable.ic_media_play, "Play", ACTION_PLAY));
+
+        notification.addAction(generateAction
+                (android.R.drawable.ic_media_next, "Next", ACTION_NEXT));
+
+
+
+        // TODO - dismiss the notification - ALSO kill the app
+        Intent stopIntent = new Intent(getApplicationContext(), PlaybackService.class);
+        stopIntent.setAction(ACTION_STOP);
+        PendingIntent removeNotification =
+                PendingIntent.getService(getApplicationContext(), 1, stopIntent, 0);
+        notification.setDeleteIntent(removeNotification);
+
+
+        mNotificationManager =
+                (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+        mNotificationManager.notify(NOTIFY_ID, notification.build());
+
+        // stop the system killing the service - STOPS the notification from being dismissed
+        // startForeground(NOTIFY_ID, notification.build());
     }
+
+    private android.support.v4.app.NotificationCompat.Action generateAction( int icon, String title, String intentAction ) {
+        Intent intent = new Intent( getApplicationContext(), PlaybackService.class );
+        intent.setAction( intentAction );
+        PendingIntent pendingIntent = PendingIntent.getService(getApplicationContext(), 1, intent, 0);
+        return new android.support.v4.app.NotificationCompat.Action.Builder( icon, title, pendingIntent ).build();
+    }
+
 
 
 }
