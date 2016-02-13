@@ -51,10 +51,10 @@ public class StationThread extends Thread{
     @Override
     public void run() {
         Timber.i("Executing station thread");
-        int resultsPerPage = 4;
+        int resultsPerPage = 20;
 
         HttpURLConnection con = null;
-        URL url = null;
+        URL url;
 
         // build station uri
         String token = mContext.getResources().getString(R.string.dirble_api_key);
@@ -73,12 +73,17 @@ public class StationThread extends Thread{
             Station[] data = new Gson().fromJson(reader, Station[].class);
             if(data != null) {
                 List<Station> stationList = Arrays.asList(data);
-                Timber.i("Downloaded list: %s", stationList.toString());
+                Timber.i("Downloaded list size: %d", stationList.size());
 
-                // stash the station list in the data cache
-                StationDataCache.getStationDataCache().setStationList(new ArrayList<>(stationList));
-                // let the station fragment know the station list has been updated
-                RadioPlayerApplication.postToBus(new StationThreadCompletionEvent(true));
+                if(stationList.size() == 0 && mPage > 1) {
+                    Timber.i("END OF THE LINE!!!");
+                    RadioPlayerApplication.postToBus(new StationThreadCompletionEvent(true, true));
+                } else {
+                    // stash the station list in the data cache
+                    StationDataCache.getStationDataCache().setStationList(new ArrayList<>(stationList));
+                    // let the station fragment know the station list has been updated
+                    RadioPlayerApplication.postToBus(new StationThreadCompletionEvent(true, false));
+                }
 
             } else {
                 Timber.i("No results received from remote server");
