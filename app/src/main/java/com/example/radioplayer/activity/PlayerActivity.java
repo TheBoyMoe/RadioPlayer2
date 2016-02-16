@@ -105,7 +105,7 @@ public class PlayerActivity extends AppCompatActivity implements
         if(mQueuePosition == mQueue.size() - 1) {
             mNextBtn.setVisibility(View.GONE);
         }
-
+        // FIXME service connection leak
         // create the intent used to both start & bind to the service
         Intent intent = new Intent(this, PlaybackService.class);
         this.getApplicationContext().bindService(intent, this, 0);
@@ -113,15 +113,6 @@ public class PlayerActivity extends AppCompatActivity implements
         startService(intent);
     }
 
-    @Override
-    protected void onSaveInstanceState(Bundle outState) {
-        super.onSaveInstanceState(outState);
-        // FIXME causes NPE after a number of device rotations due to null media controller
-        Timber.i("MediaController: %s", mMediaController);
-        int mState = mMediaController.getPlaybackState().getState();
-        outState.putInt(BUNDLE_STATE, mState);
-        outState.putInt(BUNDLE_QUEUE_POSITION, mQueuePosition);
-    }
 
     @Override
     protected void onDestroy() {
@@ -143,6 +134,13 @@ public class PlayerActivity extends AppCompatActivity implements
         RadioPlayerApplication.getInstance().getBus().unregister(this);
     }
 
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        mState = mMediaController.getPlaybackState().getState();
+        outState.putInt(BUNDLE_STATE, mState);
+        outState.putInt(BUNDLE_QUEUE_POSITION, mQueuePosition);
+    }
 
     @Override
     public void onClick(View view) {
@@ -182,7 +180,6 @@ public class PlayerActivity extends AppCompatActivity implements
         }
     }
 
-
     @Override
     public void onServiceConnected(ComponentName name, IBinder service) {
         if(service instanceof PlaybackService.ServiceBinder) {
@@ -191,7 +188,6 @@ public class PlayerActivity extends AppCompatActivity implements
                         ((PlaybackService.ServiceBinder) service).getService().getMediaSessionToken());
 
                 mMediaController.registerCallback(mMediaControllerCallback);
-
                 mState = mMediaController.getPlaybackState().getState();
                 Timber.i("Launching PlayerActivity, connecting to PlaybackService, current mState: %d", mState);
 
@@ -208,8 +204,6 @@ public class PlayerActivity extends AppCompatActivity implements
                         mMediaController.getTransportControls().stop();
                         playFromStationUri();
                     }
-                } else {
-                    Timber.i("Device rotated");
                 }
 
             } catch (RemoteException e) {
@@ -218,10 +212,9 @@ public class PlayerActivity extends AppCompatActivity implements
         }
     }
 
-
     @Override
     public void onServiceDisconnected(ComponentName name) {
-        Timber.i("Disconnected from Playback Service");
+        Timber.i("Unexpectedly disconnected from Playback Service");
     }
 
 
