@@ -117,14 +117,13 @@ public class PlaybackService extends Service implements
     public int onStartCommand(Intent startIntent, int flags, int startId) {
         if(startIntent != null && startIntent.getAction() != null) {
 
-            Timber.i("Starting PlaybackService");
             switch (startIntent.getAction()) {
                 case ACTION_PLAY:
                     Timber.i("Calling play");
                     mMediaController.getTransportControls().play();
                     break;
                 case ACTION_STOP:
-                    Timber.i("Calling updateSession");
+                    Timber.i("Calling Stop");
                     mMediaController.getTransportControls().stop();
                     break;
                 case ACTION_NEXT:
