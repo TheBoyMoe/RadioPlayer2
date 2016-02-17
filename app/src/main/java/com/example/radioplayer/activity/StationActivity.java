@@ -10,12 +10,10 @@ import com.example.radioplayer.R;
 import com.example.radioplayer.RadioPlayerApplication;
 import com.example.radioplayer.event.MessageEvent;
 import com.example.radioplayer.event.OnClickEvent;
+import com.example.radioplayer.fragment.RadioPlayerFragment;
 import com.example.radioplayer.fragment.StationFragment;
-import com.example.radioplayer.model.Category;
 import com.example.radioplayer.util.Utils;
 import com.squareup.otto.Subscribe;
-
-import timber.log.Timber;
 
 public class StationActivity extends AppCompatActivity{
 
@@ -64,17 +62,15 @@ public class StationActivity extends AppCompatActivity{
         RadioPlayerApplication.getInstance().getBus().unregister(this);
     }
 
-
     @Subscribe
     public void getOnClickEvent(OnClickEvent event) {
         if(event.getClickEvent().equals(OnClickEvent.STATION_ON_CLICK_EVENT)) {
             int position = event.getPosition();
-            Intent intent = new Intent(this, PlayerActivity.class);
-            intent.putExtra(PlayerActivity.BUNDLE_QUEUE_POSITION, position);
+            Intent intent = new Intent(this, RadioPlayerActivity.class);
+            intent.putExtra(RadioPlayerFragment.BUNDLE_QUEUE_POSITION, position);
             startActivity(intent);
         }
     }
-
 
     // handle message events
     @Subscribe

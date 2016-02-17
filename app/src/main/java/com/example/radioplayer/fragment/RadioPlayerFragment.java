@@ -1,5 +1,6 @@
-package com.example.radioplayer.activity;
+package com.example.radioplayer.fragment;
 
+import android.app.Application;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.content.ServiceConnection;
@@ -7,18 +8,17 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.os.RemoteException;
-import android.support.design.widget.CoordinatorLayout;
+import android.support.annotation.Nullable;
 import android.support.v4.media.session.MediaControllerCompat;
 import android.support.v4.media.session.PlaybackStateCompat;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.example.radioplayer.R;
-import com.example.radioplayer.RadioPlayerApplication;
 import com.example.radioplayer.data.StationDataCache;
 import com.example.radioplayer.event.PlaybackServiceEvent;
 import com.example.radioplayer.event.QueuePositionEvent;
@@ -31,13 +31,11 @@ import java.util.List;
 
 import timber.log.Timber;
 
-/**
- * REPLACED WITH RadioPlayer/RadioPlayerFragment COMBO
- */
-public class PlayerActivity extends AppCompatActivity implements
+public class RadioPlayerFragment extends BaseFragment implements
         View.OnClickListener, ServiceConnection{
 
     private static final String BUNDLE_STATE = "state";
+    //private static final String BUNDLE_STATION_NAME = "name";
     public static final String BUNDLE_QUEUE_POSITION = "queue_position";
 
     private TextView mStationTitle;
@@ -45,61 +43,67 @@ public class PlayerActivity extends AppCompatActivity implements
     private ImageButton mNextBtn;
     private ImageButton mPrevBtn;
     private ProgressBar mProgressBar;
-    private CoordinatorLayout mCoordinatorLayout;
     private MediaControllerCompat mMediaController;
-    private boolean mFirstTimeIn = true;
+    //private boolean mFirstTimeIn = true;
     private List<Station> mQueue;
     private int mQueuePosition;
     private int mState;
+    private View mView;
+    private Application mAppContext;
+    private String mName;
 
+    public RadioPlayerFragment() {}
+
+    public static RadioPlayerFragment newInstance(int queuePosition) {
+        RadioPlayerFragment fragment = new RadioPlayerFragment();
+        Bundle args = new Bundle();
+        args.putInt(BUNDLE_QUEUE_POSITION, queuePosition);
+        fragment.setArguments(args);
+        return fragment;
+    }
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_player);
-        mCoordinatorLayout = (CoordinatorLayout) findViewById(R.id.coordinator_layout);
-        mProgressBar = (ProgressBar) findViewById(R.id.progress_bar);
-        mStationTitle = (TextView) findViewById(R.id.station_title);
+        setRetainInstance(true);
 
-        // set up the toolbar
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
-        if(getSupportActionBar() != null) {
-            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-            getSupportActionBar().setTitle("Player Activity");
-        }
-
-        // setup player controls elements
-        mPlayStopBtn = (ImageButton) findViewById(R.id.play_stop_button);
-        mPlayStopBtn.setOnClickListener(this);
-        mPrevBtn = (ImageButton) findViewById(R.id.previous_button);
-        mPrevBtn.setOnClickListener(this);
-        mNextBtn = (ImageButton) findViewById(R.id.next_button);
-        mNextBtn.setOnClickListener(this);
-
-        // retrieve the queue from the data cache
+        // retrieve the queue & queue position
+        mQueuePosition = getArguments().getInt(BUNDLE_QUEUE_POSITION);
         mQueue = StationDataCache.getStationDataCache().getStationList();
 
-        if(savedInstanceState != null) {
-            mFirstTimeIn = false;
+        mAppContext = (Application) getActivity().getApplicationContext();
 
-            // restore player state
-            mQueuePosition = savedInstanceState.getInt(BUNDLE_QUEUE_POSITION, 0);
-            mState = savedInstanceState.getInt(BUNDLE_STATE);
+        // create the intent used to both start & bind to the service
+        Intent intent = new Intent(mAppContext, PlaybackService.class);
+        mAppContext.bindService(intent, this, 0);
+        Timber.i("Binding Playback Service");
+        mAppContext.startService(intent);
+    }
 
-            if(mState == PlaybackStateCompat.STATE_BUFFERING) {
-                mPlayStopBtn.setImageResource(R.drawable.action_stop);
-                mProgressBar.setVisibility(View.VISIBLE);
-            }
-            if(mState == PlaybackStateCompat.STATE_PLAYING)
-                mPlayStopBtn.setImageResource(R.drawable.action_stop);
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        mAppContext.unbindService(this);
+        Timber.i("Unbinding Playback Service");
+    }
 
-        } else {
-            mQueuePosition = getIntent().getIntExtra(BUNDLE_QUEUE_POSITION, 0);
-        }
+    @Nullable
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        mView = inflater.inflate(R.layout.content_player, container, false);
 
-        // TODO set the station  and title
-        mStationTitle.setText(mQueue.get(mQueuePosition).getName());
+        mStationTitle = (TextView) mView.findViewById(R.id.station_title);
+        setStationTitle();
+        mProgressBar = (ProgressBar) mView.findViewById(R.id.progress_bar);
+        mProgressBar.setVisibility(View.GONE);
+
+        // setup player controls elements
+        mPlayStopBtn = (ImageButton) mView.findViewById(R.id.play_stop_button);
+        mPlayStopBtn.setOnClickListener(this);
+        mPrevBtn = (ImageButton) mView.findViewById(R.id.previous_button);
+        mPrevBtn.setOnClickListener(this);
+        mNextBtn = (ImageButton) mView.findViewById(R.id.next_button);
+        mNextBtn.setOnClickListener(this);
 
         // hide prev/next btns to prevent use if starting from the first or last station
         if(mQueuePosition == 0) {
@@ -108,42 +112,26 @@ public class PlayerActivity extends AppCompatActivity implements
         if(mQueuePosition == mQueue.size() - 1) {
             mNextBtn.setVisibility(View.GONE);
         }
-        // FIXME service connection leak
-        // create the intent used to both start & bind to the service
-        Intent intent = new Intent(this, PlaybackService.class);
-        this.getApplicationContext().bindService(intent, this, 0);
-        Timber.i("Binding Playback Service");
-        startService(intent);
-    }
 
+        // ensure that the correct play/stop btn state is shown on rotation
+        if(savedInstanceState != null) {
+            mState = savedInstanceState.getInt(BUNDLE_STATE);
+            if(mState == PlaybackStateCompat.STATE_BUFFERING) {
+                mPlayStopBtn.setImageResource(R.drawable.action_stop);
+                mProgressBar.setVisibility(View.VISIBLE);
+            }
+            if(mState == PlaybackStateCompat.STATE_PLAYING)
+                mPlayStopBtn.setImageResource(R.drawable.action_stop);
+        }
 
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        // FIXME - the service is not being unbound causing a service connection leak, resulting in the Activity leaking
-        this.getApplicationContext().unbindService(this);
-        Timber.i("Unbinding Playback Service");
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        RadioPlayerApplication.getInstance().getBus().register(this);
+        return mView;
     }
 
     @Override
-    protected void onPause() {
-        super.onPause();
-        RadioPlayerApplication.getInstance().getBus().unregister(this);
-    }
-
-    @Override
-    protected void onSaveInstanceState(Bundle outState) {
+    public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
-        // FIXME may cause NPE due to null MediaController on device rotation
         mState = mMediaController.getPlaybackState().getState();
         outState.putInt(BUNDLE_STATE, mState);
-        outState.putInt(BUNDLE_QUEUE_POSITION, mQueuePosition);
     }
 
     @Override
@@ -157,7 +145,7 @@ public class PlayerActivity extends AppCompatActivity implements
                 if(mState == PlaybackStateCompat.STATE_NONE || mState == PlaybackStateCompat.STATE_STOPPED) {
                     Timber.i("Clicked play");
                     playFromStationUri();
-                // stop playback // FIXME calling stop when buffering causes media player to stop in state 4, error(-38, 0)
+                    // stop playback
                 } else if(mState == PlaybackStateCompat.STATE_BUFFERING
                         || mState == PlaybackStateCompat.STATE_PLAYING
                         || mState == PlaybackStateCompat.STATE_CONNECTING){
@@ -188,26 +176,21 @@ public class PlayerActivity extends AppCompatActivity implements
     public void onServiceConnected(ComponentName name, IBinder service) {
         if(service instanceof PlaybackService.ServiceBinder) {
             try {
-                mMediaController = new MediaControllerCompat(PlayerActivity.this,
+                mMediaController = new MediaControllerCompat(mAppContext,
                         ((PlaybackService.ServiceBinder) service).getService().getMediaSessionToken());
 
                 mMediaController.registerCallback(mMediaControllerCallback);
                 mState = mMediaController.getPlaybackState().getState();
                 Timber.i("Launching PlayerActivity, connecting to PlaybackService, current mState: %d", mState);
 
-                if(mFirstTimeIn) { // stop restarting every time the device rotates
-                    // start playback as soon as player activity launches
-                    Timber.i("First time in");
-                    if(mState == PlaybackStateCompat.STATE_NONE || mState == PlaybackStateCompat.STATE_STOPPED) {
-
-                        playFromStationUri();
-
-                    } else if(mState == PlaybackStateCompat.STATE_BUFFERING || mState == PlaybackStateCompat.STATE_PLAYING){
-
-                        // if already playing, stop and start the new selected stn
-                        mMediaController.getTransportControls().stop();
-                        playFromStationUri();
-                    }
+                // start playback as soon as player activity launches
+                Timber.i("First time in");
+                if(mState == PlaybackStateCompat.STATE_NONE || mState == PlaybackStateCompat.STATE_STOPPED) {
+                    playFromStationUri();
+                } else if(mState == PlaybackStateCompat.STATE_BUFFERING || mState == PlaybackStateCompat.STATE_PLAYING){
+                    // if already playing, stop and start the new selected stn
+                    mMediaController.getTransportControls().stop();
+                    playFromStationUri();
                 }
 
             } catch (RemoteException e) {
@@ -218,33 +201,31 @@ public class PlayerActivity extends AppCompatActivity implements
 
     @Override
     public void onServiceDisconnected(ComponentName name) {
-        Timber.i("Unexpectedly disconnected from Playback Service");
+        Timber.i("Service unexpectedly disconnected");
     }
 
-
     private MediaControllerCompat.Callback mMediaControllerCallback =
-        new MediaControllerCompat.Callback() {
+            new MediaControllerCompat.Callback() {
 
-            @Override
-            public void onPlaybackStateChanged(PlaybackStateCompat state) {
-                switch (state.getState()) {
-                    case PlaybackStateCompat.STATE_NONE:
-                    case PlaybackStateCompat.STATE_STOPPED:
-                        mPlayStopBtn.setImageResource(R.drawable.action_play);
-                        break;
-                    case PlaybackStateCompat.STATE_BUFFERING:
-                    case PlaybackStateCompat.STATE_PLAYING:
-                        mPlayStopBtn.setImageResource(R.drawable.action_stop);
-                        break;
+                @Override
+                public void onPlaybackStateChanged(PlaybackStateCompat state) {
+                    switch (state.getState()) {
+                        case PlaybackStateCompat.STATE_NONE:
+                        case PlaybackStateCompat.STATE_STOPPED:
+                            mPlayStopBtn.setImageResource(R.drawable.action_play);
+                            break;
+                        case PlaybackStateCompat.STATE_BUFFERING:
+                        case PlaybackStateCompat.STATE_PLAYING:
+                            mPlayStopBtn.setImageResource(R.drawable.action_stop);
+                            break;
+                    }
                 }
-            }
 
-            // IMPL onMetaDataChanged ot update the station title
-    };
+                // IMPL onMetaDataChanged ot update the station title
+            };
 
-    // Helper methods ///////////////////////////////////////////////////////
+    // HELPER METHODS ///////////////////////////////////////////////////////
 
-    // show snackbar to the user to display important system events
     @Subscribe
     public void getMessageEvent(PlaybackServiceEvent event) {
         String message = event.getMessage();
@@ -268,7 +249,7 @@ public class PlayerActivity extends AppCompatActivity implements
     public void getQueuePositionEvent(QueuePositionEvent event) {
         // update queue position and station title
         mQueuePosition = event.getQueuePosition();
-        mStationTitle.setText(mQueue.get(mQueuePosition).getName());
+        setStationTitle();
         if(mQueuePosition == 0) {
             mPrevBtn.setVisibility(View.GONE);
         } else if(mQueuePosition == mQueue.size() - 1){
@@ -280,16 +261,15 @@ public class PlayerActivity extends AppCompatActivity implements
         Timber.i("Queue position: %s", mQueuePosition);
     }
 
-
-    private void displayMessage(String message) {
-        Utils.showSnackbar(mCoordinatorLayout, message);
+    private void setStationTitle() {
+        mName = mQueue.get(mQueuePosition).getName();
+        if(mName != null)
+            mStationTitle.setText(mName);
     }
-
 
     private void playFromStationUri() {
         Station stn = mQueue.get(mQueuePosition);
         if(stn != null) {
-
             String name = stn.getName() != null? stn.getName() : "";
             String slug = stn.getSlug() != null? stn.getSlug() : "";
             String country = stn.getCountry() != null? stn.getCountry() : "";
@@ -321,6 +301,13 @@ public class PlayerActivity extends AppCompatActivity implements
                 displayMessage(PlaybackServiceEvent.ON_NO_STREAM_FOUND);
             }
         }
+
+
     }
+
+    private void displayMessage(String message) {
+        Utils.showSnackbar(mView, message);
+    }
+
 
 }
