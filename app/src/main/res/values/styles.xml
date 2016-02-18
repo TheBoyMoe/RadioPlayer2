@@ -18,10 +18,12 @@
 
     <!-- PlayActivity theme for tablet -->
     <style name="AppTheme.ThemeWhenLarge" parent="Theme.AppCompat.Light.DialogWhenLarge">
+        <!-- Remove actionBar since the activity provides it's own -->
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
-        <!-- set actionBar color-->
+        <!-- set actionBar and statusBar colors -->
         <item name="colorPrimary">@color/colorPrimary</item>
+        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
     </style>
 
     <style name="AppTheme.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar"/>
