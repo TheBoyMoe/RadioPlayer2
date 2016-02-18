@@ -9,18 +9,16 @@ import com.example.radioplayer.data.StationDataCache;
 import com.example.radioplayer.event.MessageEvent;
 import com.example.radioplayer.event.StationThreadCompletionEvent;
 import com.example.radioplayer.model.Station;
+import com.facebook.stetho.okhttp.StethoInterceptor;
 import com.google.gson.Gson;
+import com.squareup.okhttp.OkHttpClient;
+import com.squareup.okhttp.Request;
+import com.squareup.okhttp.Response;
 
 import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.URL;
+import java.io.Reader;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.LinkedList;
 import java.util.List;
 
 import timber.log.Timber;
@@ -53,9 +51,6 @@ public class StationThread extends Thread{
         Timber.i("Executing station thread");
         int resultsPerPage = 20;
 
-        HttpURLConnection con = null;
-        URL url;
-
         // build station uri
         String token = mContext.getResources().getString(R.string.dirble_api_key);
         Uri stationUri = Uri.parse(BASE_URL + mCategoryId + QUERY).buildUpon()
@@ -63,44 +58,45 @@ public class StationThread extends Thread{
                 .appendQueryParameter(RESULTS_PER_PAGE, String.valueOf(resultsPerPage))
                 .appendQueryParameter(TOKEN_PARAM, token)
                 .build();
+        Timber.i("Url: %s", stationUri);
 
         try {
-            url = new URL(stationUri.toString());
-            Timber.i("Url: %s", url);
-            con = (HttpURLConnection) url.openConnection();
-            InputStream in = con.getInputStream();
-            BufferedReader reader = new BufferedReader(new InputStreamReader(in));
-            Station[] data = new Gson().fromJson(reader, Station[].class);
-            if(data != null) {
-                List<Station> stationList = Arrays.asList(data);
-                Timber.i("Downloaded list size: %d", stationList.size());
+            OkHttpClient client = new OkHttpClient();
+            client.networkInterceptors().add(new StethoInterceptor()); // intercept network traffic
+            Request request = new Request.Builder().url(stationUri.toString()).build();
+            Response response = client.newCall(request).execute();
 
-                if(stationList.size() == 0 && mPage > 1) {
-                    Timber.i("END OF THE LINE!!!");
-                    RadioPlayerApplication.postToBus(new StationThreadCompletionEvent(true, true));
+            if(response.isSuccessful()) {
+                Reader in = response.body().charStream();
+                BufferedReader reader =  new BufferedReader(in);
+
+                Station[] data = new Gson().fromJson(reader, Station[].class);
+                if(data != null) {
+                    List<Station> stationList = Arrays.asList(data);
+                    Timber.i("Downloaded list size: %d", stationList.size());
+
+                    if(stationList.size() == 0 && mPage > 1) {
+                        Timber.i("END OF THE LINE!!!");
+                        RadioPlayerApplication.postToBus(new StationThreadCompletionEvent(true, true));
+                    } else {
+                        // stash the station list in the data cache
+                        StationDataCache.getStationDataCache().setStationList(new ArrayList<>(stationList));
+                        // let the station fragment know the station list has been updated
+                        RadioPlayerApplication.postToBus(new StationThreadCompletionEvent(true, false));
+                    }
+
                 } else {
-                    // stash the station list in the data cache
-                    StationDataCache.getStationDataCache().setStationList(new ArrayList<>(stationList));
-                    // let the station fragment know the station list has been updated
-                    RadioPlayerApplication.postToBus(new StationThreadCompletionEvent(true, false));
+                    Timber.i("No results received from remote server");
+                    // post message to bus - display snackbar to user
+                    RadioPlayerApplication.postToBus(new MessageEvent("No results available"));
                 }
-
+                reader.close();
             } else {
-                Timber.i("No results received from remote server");
-                // post message to bus - display snackbar to user
-                RadioPlayerApplication.postToBus(new MessageEvent("No results available"));
+                Timber.e("Http response: %s", response.toString());
             }
 
-            reader.close();
-
-        } catch (MalformedURLException e) {
-            Timber.e("Malformed url: %s", e.getMessage());
-        } catch (IOException e) {
-            Timber.e("Connection failure: %s", e.getMessage());
-        } finally {
-            if(con != null) {
-                con.disconnect();
-            }
+        } catch (Exception e) {
+            Timber.e("Exception parsing json: %s", e.getMessage());
         }
 
     }

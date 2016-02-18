@@ -28,9 +28,11 @@ dependencies {
 
     compile 'com.squareup:otto:1.3.8'
     compile 'com.jakewharton.timber:timber:3.0.1'
+    compile 'com.squareup.okhttp:okhttp:2.7.4'
     compile 'com.google.code.gson:gson:2.5'
     compile 'com.facebook.stetho:stetho:1.3.0'
     compile 'com.facebook.stetho:stetho-timber:1.3.0'
+    compile 'com.facebook.stetho:stetho-okhttp:1.3.0' // req'd for okhttp 2.x
 
     debugCompile 'com.squareup.leakcanary:leakcanary-android:1.3.1'
     releaseCompile 'com.squareup.leakcanary:leakcanary-android-no-op:1.3.1'

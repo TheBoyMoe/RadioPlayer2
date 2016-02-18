@@ -7,15 +7,14 @@ import com.example.radioplayer.RadioPlayerApplication;
 import com.example.radioplayer.event.CategoryThreadCompletionEvent;
 import com.example.radioplayer.event.MessageEvent;
 import com.example.radioplayer.model.Category;
+import com.facebook.stetho.okhttp.StethoInterceptor;
 import com.google.gson.Gson;
+import com.squareup.okhttp.OkHttpClient;
+import com.squareup.okhttp.Request;
+import com.squareup.okhttp.Response;
 
 import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.URL;
+import java.io.Reader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -38,39 +37,39 @@ public class CategoryThread extends Thread{
     @Override
     public void run() {
         Timber.i("Executing category thread");
-        HttpURLConnection con = null;
 
         try {
-            // connect to the remote server and download the stream
             String token = mContext.getResources().getString(R.string.dirble_api_key);
-            URL url = new URL(BASE_URL + token);
-            Timber.i("Url: %s", url);
-            con = (HttpURLConnection) url.openConnection();
-            InputStream is = con.getInputStream();
-            BufferedReader reader =  new BufferedReader(new InputStreamReader(is));
 
-            // use gson to parse the json and instantiate the object collection
-            Category[] array = new Gson().fromJson(reader, Category[].class);
+            // connect to the remote server and download the stream using OkHttp client
+            OkHttpClient client = new OkHttpClient();
+            client.networkInterceptors().add(new StethoInterceptor()); // intercept network traffic
+            Request request = new Request.Builder().url(BASE_URL + token).build();
+            Response response = client.newCall(request).execute();
 
-            if(array != null) {
-                List<Category> categories = new ArrayList<>(Arrays.asList(array));
-                RadioPlayerApplication.postToBus(new CategoryThreadCompletionEvent(categories));
-                Timber.i("Category list: %s", categories.toString());
+            if(response.isSuccessful()) {
+                Reader in = response.body().charStream();
+                BufferedReader reader =  new BufferedReader(in);
+
+                // use gson to parse the json and instantiate the object collection
+                Category[] array = new Gson().fromJson(reader, Category[].class);
+
+                if(array != null) {
+                    List<Category> categories = new ArrayList<>(Arrays.asList(array));
+                    RadioPlayerApplication.postToBus(new CategoryThreadCompletionEvent(categories));
+                    Timber.i("Category list: %s", categories.toString());
+                } else {
+                    Timber.i("No results received from remote server");
+                    // post message to bus - display snackbar to user
+                    RadioPlayerApplication.postToBus(new MessageEvent("No results received"));
+                }
+                reader.close();
             } else {
-                Timber.i("No results received from remote server");
-                // post message to bus - display snackbar to user
-                RadioPlayerApplication.postToBus(new MessageEvent("No results received"));
+                Timber.e("Http response: %s", response.toString());
             }
 
-            reader.close();
-
-        } catch (MalformedURLException e) {
-            Timber.e("Malformed url: %s", e.getMessage());
-        } catch (IOException e) {
-            Timber.e("Connection failure: %s", e.getMessage());
-        } finally {
-            if(con != null)
-                con.disconnect();
+        } catch (Exception e) {
+            Timber.e("Exception parsing json: %s", e.getMessage());
         }
 
     }

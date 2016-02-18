@@ -45,7 +45,7 @@ public class RadioPlayerApplication extends Application{
                 }
             });
             // show logs in the Chrome browser console log via Stetho (works with Timber 3.0.1)
-            Timber.plant(new StethoTree());
+            Timber.plant(new StethoTree()); // FIXME console log appearing in AS log
         }
 
         // detect memory leaks
