@@ -53,6 +53,7 @@ public class PlayerActivity extends AppCompatActivity implements
     private int mState;
 
 
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
