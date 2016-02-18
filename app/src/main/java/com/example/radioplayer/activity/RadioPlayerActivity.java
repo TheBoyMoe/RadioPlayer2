@@ -19,7 +19,7 @@ public class RadioPlayerActivity extends AppCompatActivity{
         setSupportActionBar(toolbar);
         if(getSupportActionBar() != null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-            getSupportActionBar().setTitle("Radio Player Activity"); // FIXME
+            getSupportActionBar().setTitle("Radio Player");
         }
 
         // retrieve the queue position from the intent

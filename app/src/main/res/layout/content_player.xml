@@ -12,11 +12,11 @@
 
     <ProgressBar
         android:id="@+id/progress_bar"
+        android:indeterminateDrawable="@drawable/progress_bar_circular"
         android:layout_centerInParent="true"
         android:visibility="gone"
         android:layout_width="@dimen/progress_bar_dimen"
         android:layout_height="@dimen/progress_bar_dimen"/>
-
 
 
     <RelativeLayout

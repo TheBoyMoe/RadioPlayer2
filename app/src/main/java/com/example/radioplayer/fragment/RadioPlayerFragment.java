@@ -234,14 +234,12 @@ public class RadioPlayerFragment extends BaseFragment implements
             case PlaybackServiceEvent.ON_PLAYBACK_COMPLETION:
             case PlaybackServiceEvent.ON_AUDIO_FOCUS_LOSS:
             case PlaybackServiceEvent.ON_BECOMING_NOISY:
+            case PlaybackServiceEvent.ON_NO_STREAM_FOUND:
                 mPlayStopBtn.setImageResource(R.drawable.action_play);
             case PlaybackServiceEvent.ON_BUFFERING_COMPLETE:
                 mProgressBar.setVisibility(View.GONE);
                 displayMessage(message);
                 break;
-            // DEBUG
-            default:
-                displayMessage(message);
         }
     }
 

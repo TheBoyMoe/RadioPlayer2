@@ -52,8 +52,6 @@ public class PlayerActivity extends AppCompatActivity implements
     private int mQueuePosition;
     private int mState;
 
-
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
