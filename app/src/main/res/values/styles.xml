@@ -30,4 +30,27 @@
 
     <style name="AppTheme.PopupOverlay" parent="ThemeOverlay.AppCompat.Light"/>
 
+
+    <!-- styles implemented for transitions -->
+    <style name="AppTheme.Main" parent="AppTheme.NoActionBar"/>
+
+    <style name="AppTheme.List" parent="AppTheme.NoActionBar"/>
+
+    <style name="AppTheme.Player" parent="AppTheme.NoActionBar"/>
+
+
+    <!-- Set max height/width of player on tablets -->
+    <style name="max_player_dimen">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">match_parent</item>
+    </style>
+
+    <style name="PlayerTextStyle">
+        <item name="android:textColor">@android:color/white</item>
+        <item name="android:gravity">center_horizontal</item>
+        <item name="android:fontFamily">condensed</item>
+        <item name="android:textSize">18sp</item>
+        <item name="android:singleLine">true</item>
+    </style>
+
 </resources>

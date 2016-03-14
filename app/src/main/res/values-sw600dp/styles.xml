@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Set max width of player controls on tablets -->
+    <style name="max_player_dimen">
+        <item name="android:layout_width">@dimen/dimen_max_player_width</item>
+        <item name="android:layout_height">@dimen/dimen_max_player_height</item>
+    </style>
+</resources>

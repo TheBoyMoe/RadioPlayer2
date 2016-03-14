@@ -18,4 +18,8 @@
     <color name="md_pink_700">#c2185b</color>
     <color name="md_pink_800">#ad1457</color>
 
+    <!-- Grid/List item colors -->
+    <color name="color_background">#99FFFFFF</color>
+    <color name="color_background_activated">#BBFFFFFF</color>
+
 </resources>
