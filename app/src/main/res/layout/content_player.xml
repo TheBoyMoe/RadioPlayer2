@@ -7,7 +7,7 @@
     android:layout_height="match_parent"
     android:paddingBottom="@dimen/dimen_large"
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
-    tools:context="com.example.radioplayer.activity.PlayerActivity"
+    tools:context="com.example.radioplayer.activity.RadioPlayerActivity"
     tools:showIn="@layout/activity_player">
 
     <ProgressBar

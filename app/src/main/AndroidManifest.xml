@@ -38,15 +38,15 @@
                 android:value="com.example.radioplayer.activity.MainActivity"/>
         </activity>
 
-        <activity
-            android:name=".activity.PlayerActivity"
-            android:label="@string/title_activity_player"
-            android:parentActivityName=".activity.StationActivity"
-            android:theme="@style/AppTheme.ThemeWhenLarge">
-            <meta-data
-                android:name="android.support.PARENT_ACTIVITY"
-                android:value="com.example.radioplayer.activity.StationActivity"/>
-        </activity>
+        <!--<activity-->
+            <!--android:name=".activity.PlayerActivity"-->
+            <!--android:label="@string/title_activity_player"-->
+            <!--android:parentActivityName=".activity.StationActivity"-->
+            <!--android:theme="@style/AppTheme.ThemeWhenLarge">-->
+            <!--<meta-data-->
+                <!--android:name="android.support.PARENT_ACTIVITY"-->
+                <!--android:value="com.example.radioplayer.activity.StationActivity"/>-->
+        <!--</activity>-->
 
         <activity
             android:name=".activity.RadioPlayerActivity"

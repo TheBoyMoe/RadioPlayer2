@@ -24,6 +24,7 @@ import com.example.radioplayer.event.PlaybackServiceEvent;
 import com.example.radioplayer.event.QueuePositionEvent;
 import com.example.radioplayer.model.Station;
 import com.example.radioplayer.service.PlaybackService;
+import com.example.radioplayer.util.Constants;
 import com.example.radioplayer.util.Utils;
 import com.squareup.otto.Subscribe;
 
@@ -36,7 +37,7 @@ public class RadioPlayerFragment extends BaseFragment implements
 
     private static final String BUNDLE_STATE = "state";
     //private static final String BUNDLE_STATION_NAME = "name";
-    public static final String BUNDLE_QUEUE_POSITION = "queue_position";
+    //public static final String BUNDLE_QUEUE_POSITION = "queue_position";
 
     private TextView mStationTitle;
     private ImageButton mPlayStopBtn;
@@ -57,7 +58,7 @@ public class RadioPlayerFragment extends BaseFragment implements
     public static RadioPlayerFragment newInstance(int queuePosition) {
         RadioPlayerFragment fragment = new RadioPlayerFragment();
         Bundle args = new Bundle();
-        args.putInt(BUNDLE_QUEUE_POSITION, queuePosition);
+        args.putInt(Constants.KEY_QUEUE_POSITION, queuePosition);
         fragment.setArguments(args);
         return fragment;
     }
@@ -68,7 +69,7 @@ public class RadioPlayerFragment extends BaseFragment implements
         setRetainInstance(true);
 
         // retrieve the queue & queue position
-        mQueuePosition = getArguments().getInt(BUNDLE_QUEUE_POSITION);
+        mQueuePosition = getArguments().getInt(Constants.KEY_QUEUE_POSITION);
         mQueue = StationDataCache.getStationDataCache().getStationList();
 
         mAppContext = (Application) getActivity().getApplicationContext();

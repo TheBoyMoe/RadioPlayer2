@@ -28,7 +28,7 @@ import android.support.v7.app.NotificationCompat;
 
 import com.example.radioplayer.R;
 import com.example.radioplayer.RadioPlayerApplication;
-import com.example.radioplayer.activity.PlayerActivity;
+import com.example.radioplayer.activity.RadioPlayerActivity;
 import com.example.radioplayer.data.StationDataCache;
 import com.example.radioplayer.event.MessageEvent;
 import com.example.radioplayer.event.PlaybackServiceEvent;
@@ -490,7 +490,7 @@ public class PlaybackService extends Service implements
         notification.setStyle(style);
 
         // define the action upon tapping the notification
-        Intent launchIntent = new Intent(getApplicationContext(), PlayerActivity.class);
+        Intent launchIntent = new Intent(getApplicationContext(), RadioPlayerActivity.class);
         launchIntent.setAction(ACTION_OPEN);
         PendingIntent returnToPlayer = PendingIntent.getActivity(this, 0, launchIntent, 0);
         notification.setContentIntent(returnToPlayer);

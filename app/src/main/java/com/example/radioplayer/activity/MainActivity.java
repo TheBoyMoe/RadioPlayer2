@@ -3,14 +3,9 @@ package com.example.radioplayer.activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.CoordinatorLayout;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 
 import com.example.radioplayer.R;
-import com.example.radioplayer.RadioPlayerApplication;
 import com.example.radioplayer.data.StationDataCache;
 import com.example.radioplayer.event.DataModelUpdateEvent;
 import com.example.radioplayer.event.MessageEvent;
@@ -18,10 +13,11 @@ import com.example.radioplayer.event.OnClickEvent;
 import com.example.radioplayer.fragment.CategoryDataFragment;
 import com.example.radioplayer.fragment.CategoryFragment;
 import com.example.radioplayer.fragment.StationFragment;
+import com.example.radioplayer.util.Constants;
 import com.example.radioplayer.util.Utils;
 import com.squareup.otto.Subscribe;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends BaseActivity {
 
     private static final String CATEGORY_ID = "category_id";
     private CategoryDataFragment mCategoryDataFragment;
@@ -38,8 +34,9 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         mCoordinatorLayout = (CoordinatorLayout) findViewById(R.id.coordinator_layout);
 
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
+        //Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        //setSupportActionBar(toolbar);
+        setToolbarOnActivity(R.id.toolbar);
 
         // load the category data fragment - fragment retained on device rotation
         mCategoryDataFragment =
@@ -130,8 +127,8 @@ public class MainActivity extends AppCompatActivity {
         // handle clicks to station items
         else if(event.getClickEvent().equals(OnClickEvent.STATION_ON_CLICK_EVENT)) {
                 int position = event.getPosition();
-                Intent intent = new Intent(this, PlayerActivity.class);
-                intent.putExtra(PlayerActivity.BUNDLE_QUEUE_POSITION, position);
+                Intent intent = new Intent(this, RadioPlayerActivity.class);
+                intent.putExtra(Constants.KEY_QUEUE_POSITION, position);
                 startActivity(intent);
         }
 
@@ -155,34 +152,6 @@ public class MainActivity extends AppCompatActivity {
     @Subscribe
     public void getMessageEvent(MessageEvent event) {
         Utils.showSnackbar(mCoordinatorLayout, event.getMessage());
-    }
-
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        RadioPlayerApplication.getInstance().getBus().register(this);
-    }
-
-    @Override
-    protected void onPause() {
-        super.onPause();
-        RadioPlayerApplication.getInstance().getBus().unregister(this);
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.menu_main, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        //noinspection SimplifiableIfStatement
-        if (item.getItemId() == R.id.action_settings) {
-            return true;
-        }
-        return super.onOptionsItemSelected(item);
     }
 
 
