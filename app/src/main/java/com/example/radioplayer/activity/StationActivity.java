@@ -31,7 +31,7 @@ public class StationActivity extends BaseActivity{
 
         setToolbarOnChildActivity(R.id.toolbar);
         if(getSupportActionBar() != null) {
-            getSupportActionBar().setTitle(title + " radio stations");
+            getSupportActionBar().setTitle(title + " stations");
         }
 
         // load the UI fragment

@@ -17,7 +17,7 @@
 
     <TextView
         android:id="@+id/item_title"
-        style="@style/GridItemTextStyle"
+        style="@style/ItemTextStyle.Centered"
         android:paddingTop="@dimen/dimen_small"
         android:layout_below="@id/item_icon"
         android:layout_width="match_parent"

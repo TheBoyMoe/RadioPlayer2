@@ -3,19 +3,19 @@ package com.example.radioplayer.fragment;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.widget.SwipeRefreshLayout;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
-import android.widget.ListView;
-import android.widget.TextView;
 
 import com.example.radioplayer.R;
 import com.example.radioplayer.RadioPlayerApplication;
+import com.example.radioplayer.adapter.CustomItemDecoration;
+import com.example.radioplayer.adapter.ListItemAdapter;
 import com.example.radioplayer.data.StationDataCache;
 import com.example.radioplayer.event.MessageEvent;
-import com.example.radioplayer.event.OnClickEvent;
 import com.example.radioplayer.event.StationThreadCompletionEvent;
 import com.example.radioplayer.model.Station;
 import com.example.radioplayer.network.StationThread;
@@ -36,16 +36,18 @@ public class StationFragment extends BaseFragment implements AdapterView.OnItemC
     public static final String BUNDLE_CATEGORY_ID = "category_id";
     private static final String BUNDLE_PAGE_NUMBER = "page_number";
     private List<Station> mStationList = new ArrayList<>();
-    private StationArrayAdapter mAdapter;
+    private ListItemAdapter mAdapter;
     private Long mCategoryId;
     private boolean mIsStarted = false;
-    private ListView mListView;
+    //private ListView mListView;
     private SwipeRefreshLayout mRefreshLayout;
     private int mPageCount = 0;
+    private RecyclerView mRecyclerView;
 
     public StationFragment() {}
 
     public static StationFragment newInstance(Long categoryId) {
+        // TODO add category icon to the bundle
         StationFragment fragment = new StationFragment();
         Bundle args = new Bundle();
         args.putLong(BUNDLE_CATEGORY_ID, categoryId);
@@ -58,6 +60,7 @@ public class StationFragment extends BaseFragment implements AdapterView.OnItemC
         super.onCreate(savedInstanceState);
         // retrieve the categoryId & execute the background thread to download the station list
         mCategoryId = getArguments().getLong(BUNDLE_CATEGORY_ID);
+        // TODO retrieve category icon
     }
 
 
@@ -65,21 +68,29 @@ public class StationFragment extends BaseFragment implements AdapterView.OnItemC
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
-        View view = inflater.inflate(R.layout.station_list_view, container, false);
-        mRefreshLayout = (SwipeRefreshLayout) view.findViewById(R.id.swipe_container);
-        mListView = (ListView) view.findViewById(R.id.list_view);
+        // TODO delete this block
+//        View view = inflater.inflate(R.layout.station_list_view, container, false);
+//        mListView = (ListView) view.findViewById(R.id.list_view);
+//
+//        mAdapter = new ListItemAdapter(mStationList, getActivity());
+//        mListView.setAdapter(mAdapter);
+//        mListView.setOnItemClickListener(this);
 
-        mAdapter = new StationArrayAdapter(mStationList);
-        mListView.setAdapter(mAdapter);
-        mListView.setOnItemClickListener(this);
-
-        // set the color on the pulldown icon
-        mRefreshLayout.setColorSchemeResources(
-                R.color.color_swipe_1,
-                R.color.color_swipe_2,
-                R.color.color_swipe_3,
-                R.color.color_swipe_4
-        );
+        View view = inflater.inflate(R.layout.list_recycler, container, false);
+        mRecyclerView = (RecyclerView) view.findViewById(R.id.recycler_view);
+        mRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
+        mRecyclerView.addItemDecoration(new CustomItemDecoration(getResources().getDimensionPixelSize(R.dimen.dimen_space)));
+        mAdapter = new ListItemAdapter(mStationList, getActivity());
+        mRecyclerView.setAdapter(mAdapter);
+        // TODO impl pulldown to refresh
+        // configure the pulldown icon
+//        mRefreshLayout = (SwipeRefreshLayout) view.findViewById(R.id.swipe_container);
+//        mRefreshLayout.setColorSchemeResources(
+//                R.color.color_swipe_1,
+//                R.color.color_swipe_2,
+//                R.color.color_swipe_3,
+//                R.color.color_swipe_4
+//        );
 
         if(savedInstanceState != null) {
             // retrieve page number from the bundle
@@ -91,13 +102,14 @@ public class StationFragment extends BaseFragment implements AdapterView.OnItemC
             downloadStationData();
         }
 
+        // TODO impl for recycler
         // setup refresh listener which triggers another data download
-        mRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
-            @Override
-            public void onRefresh() {
-                downloadStationData();
-            }
-        });
+//        mRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+//            @Override
+//            public void onRefresh() {
+//                downloadStationData();
+//            }
+//        });
 
         return view;
     }
@@ -105,9 +117,10 @@ public class StationFragment extends BaseFragment implements AdapterView.OnItemC
 
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+        // TODO
         // reverse the item position clicked on to match the adapter
-        position = (mStationList.size() - 1) - position;
-        RadioPlayerApplication.postToBus(new OnClickEvent(OnClickEvent.LIST_ITEM_CLICK_EVENT, position));
+        //position = (mStationList.size() - 1) - position;
+        //RadioPlayerApplication.postToBus(new OnClickEvent(OnClickEvent.LIST_ITEM_CLICK_EVENT, position));
     }
 
 
@@ -136,14 +149,14 @@ public class StationFragment extends BaseFragment implements AdapterView.OnItemC
     public void refreshUi(StationThreadCompletionEvent event) {
         if(event.isThreadComplete()) {
             mIsStarted = false;
-            // signal refreshing complete
-            mRefreshLayout.setRefreshing(false);
+            // TODO signal refreshing complete
+           // mRefreshLayout.setRefreshing(false);
             // refresh the station list with the most up-to-date list from the cache
             mStationList.clear();
             setStationList();
         }
         if(event.isDownloadComplete()) {
-            Utils.showSnackbar(mListView, "No more stations found, " + mStationList.size() + " found in total");
+            Utils.showSnackbar(mRecyclerView, "No more stations found, " + mStationList.size() + " found in total");
         }
     }
 
@@ -155,55 +168,5 @@ public class StationFragment extends BaseFragment implements AdapterView.OnItemC
         mAdapter.notifyDataSetChanged();
     }
 
-
-    // Custom ArrayAdapter and ViewHolder
-    private class StationArrayAdapter extends ArrayAdapter<Station> {
-
-        private List<Station> list;
-
-        public StationArrayAdapter(List<Station> list) {
-            super(getActivity(), 0, list);
-            this.list = list;
-        }
-
-        @Override
-        public View getView(int position, View convertView, ViewGroup parent) {
-            StationViewHolder holder = null;
-            if (convertView == null) {
-                convertView = getActivity().getLayoutInflater().inflate(R.layout.list_item, null);
-                holder = (StationViewHolder) convertView.getTag();
-            }
-            if(holder == null) {
-                holder = new StationViewHolder(convertView);
-                convertView.setTag(holder);
-            }
-
-            // bind the station object to the holder
-            holder.bindView(getItem(position));
-
-            return convertView;
-        }
-
-        @Override
-        public Station getItem(int position) {
-            // display the list view in reverse order
-            int item = (list.size() - 1) - position;
-            return list.get(item);
-        }
-    }
-
-    private class StationViewHolder {
-
-        TextView titleText = null;
-
-        StationViewHolder(View row) {
-            titleText = (TextView) row.findViewById(R.id.title_text);
-        }
-
-        void bindView(Station station) {
-            titleText.setText(station.getName());
-        }
-
-    }
 
 }

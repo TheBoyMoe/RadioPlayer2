@@ -1,10 +1,29 @@
 <?xml version="1.0" encoding="utf-8"?>
-<TextView
+<LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/title_text"
-    android:textAppearance="?android:attr/textAppearanceLarge"
-    android:singleLine="true"
+    android:gravity="center_vertical"
+    android:orientation="horizontal"
     android:padding="@dimen/dimen_normal"
+    android:background="@drawable/touch_selector"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"/>
+    android:layout_height="wrap_content">
 
+    <ImageView
+        android:id="@+id/item_icon"
+        android:tintMode="src_in"
+        android:tint="@color/colorPrimary"
+        android:layout_gravity="center_vertical"
+        android:paddingRight="@dimen/dimen_normal"
+        android:paddingEnd="@dimen/dimen_normal"
+        android:layout_width="@dimen/dimen_list_icon"
+        android:layout_height="@dimen/dimen_list_icon"/>
+
+    <TextView
+        android:id="@+id/item_title"
+        android:layout_gravity="center_vertical"
+        style="@style/ItemTextStyle"
+        android:layout_width="0dp"
+        android:layout_weight="1"
+        android:layout_height="wrap_content"/>
+
+</LinearLayout>
