@@ -47,7 +47,7 @@ public class StationActivity extends BaseActivity{
 
     @Subscribe
     public void getOnClickEvent(OnClickEvent event) {
-        if(event.getClickEvent().equals(OnClickEvent.STATION_ON_CLICK_EVENT)) {
+        if(event.getClickEvent().equals(OnClickEvent.LIST_ITEM_CLICK_EVENT)) {
             int position = event.getPosition();
             Intent intent = new Intent(this, RadioPlayerActivity.class);
             intent.putExtra(Constants.KEY_QUEUE_POSITION, position);

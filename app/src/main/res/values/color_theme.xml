@@ -9,7 +9,7 @@
     <color name="secondary_text">#727272</color>
     <color name="icons">#FFFFFF</color>
     <color name="divider">#B6B6B6</color>
-    <color name="screen_background">#FFEEEEEE</color>
+    <color name="screen_background">#FFEFEFEF</color>
 
     <!-- swipe colors -->
     <color name="md_pink_300">#f06292</color>

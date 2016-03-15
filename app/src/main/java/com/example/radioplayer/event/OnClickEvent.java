@@ -2,8 +2,8 @@ package com.example.radioplayer.event;
 
 public class OnClickEvent extends BaseEvent{
 
-    public static final String CATEGORY_ON_CLICK_EVENT = "categoryOnClickEvent";
-    public static final String STATION_ON_CLICK_EVENT = "stationOnClickEvent";
+    public static final String GRID_ITEM_CLICK_EVENT = "grid_item_click_event";
+    public static final String LIST_ITEM_CLICK_EVENT = "list_item_click_event";
     private String mClickEvent;
     private int mPosition;
 

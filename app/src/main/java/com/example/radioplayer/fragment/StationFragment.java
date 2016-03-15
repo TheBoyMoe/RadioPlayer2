@@ -107,7 +107,7 @@ public class StationFragment extends BaseFragment implements AdapterView.OnItemC
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
         // reverse the item position clicked on to match the adapter
         position = (mStationList.size() - 1) - position;
-        RadioPlayerApplication.postToBus(new OnClickEvent(OnClickEvent.STATION_ON_CLICK_EVENT, position));
+        RadioPlayerApplication.postToBus(new OnClickEvent(OnClickEvent.LIST_ITEM_CLICK_EVENT, position));
     }
 
 

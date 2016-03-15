@@ -51,12 +51,6 @@ public class MainActivity extends BaseActivity {
         // category fragment inflated via xml
         mCategoryFragment =
                 (CategoryFragment) getFragmentManager().findFragmentById(R.id.category_grid_fragment);
-//        if(mCategoryFragment == null) {
-//            mCategoryFragment = CategoryFragment.newInstance();
-//            getFragmentManager().beginTransaction()
-//                    .add(R.id.category_fragment_container, mCategoryFragment)
-//                    .commit();
-//        }
 
         // this call occurs before onCreate in CategoryDataFragment (and thus thread) are called - list empty
         if(mCategoryDataFragment != null && mCategoryFragment != null) {
@@ -102,7 +96,7 @@ public class MainActivity extends BaseActivity {
 
         // TODO add activity transitions - check Utility.launchActivity() in RadioPLayerUI
         // deal with clicks to category items
-        if(event.getClickEvent().equals(OnClickEvent.CATEGORY_ON_CLICK_EVENT)) {
+        if(event.getClickEvent().equals(OnClickEvent.GRID_ITEM_CLICK_EVENT)) {
             mCategoryId = mCategoryDataFragment.getCategoryDataItem(event.getPosition()).getId();
             String categoryTitle = mCategoryDataFragment.getCategoryDataItem(event.getPosition()).getTitle();
 
@@ -126,7 +120,7 @@ public class MainActivity extends BaseActivity {
 
         }
         // handle clicks to station items
-        else if(event.getClickEvent().equals(OnClickEvent.STATION_ON_CLICK_EVENT)) {
+        else if(event.getClickEvent().equals(OnClickEvent.LIST_ITEM_CLICK_EVENT)) {
                 int position = event.getPosition();
                 Intent intent = new Intent(this, RadioPlayerActivity.class);
                 intent.putExtra(Constants.KEY_QUEUE_POSITION, position);

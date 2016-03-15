@@ -7,6 +7,8 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.example.radioplayer.R;
+import com.example.radioplayer.RadioPlayerApplication;
+import com.example.radioplayer.event.OnClickEvent;
 import com.example.radioplayer.model.Category;
 
 import java.util.Random;
@@ -62,11 +64,10 @@ public class GridItemViewHolder extends RecyclerView.ViewHolder implements View.
 
     @Override
     public void onClick(View v) {
-        // TODO
         // propagate the click event to any interested parties
-        //RadioPlayerApplication.postToBus(new OnGridItemClickEvent(mPosition));
+        RadioPlayerApplication.postToBus(new OnClickEvent(OnClickEvent.GRID_ITEM_CLICK_EVENT, mPosition));
         // set the active state
-       // mItemChoiceManager.onClick(this);
+        mItemChoiceManager.onClick(this);
     }
 
 
