@@ -56,19 +56,6 @@ public class CategoryFragment extends BaseFragment{
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
-//        final ListView listView = (ListView) inflater.inflate(R.layout.list_view, container, false);
-//        mAdapter = new CategoryArrayAdapter(mCategoryList);
-//        listView.setAdapter(mAdapter);
-//        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-//            @Override
-//            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-//                // post the click event up to the activity - post the position
-//                RadioPlayerApplication.postToBus(new OnClickEvent(OnClickEvent.CATEGORY_ON_CLICK_EVENT, position));
-//            }
-//        });
-//        return listView;
-
-        // FIXME - error inflating recycler
         AutofitRecyclerView recyclerView = (AutofitRecyclerView) inflater.inflate(R.layout.grid_recycler, container, false);
         recyclerView.addItemDecoration(new CustomItemDecoration(getResources().getDimensionPixelSize(R.dimen.dimen_space)));
         recyclerView.setHasFixedSize(true);

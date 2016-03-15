@@ -15,23 +15,6 @@ import java.util.Random;
 
 public class GridItemViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener{
 
-    private Integer[] mIcons = {
-            R.drawable.icon_adult,
-            R.drawable.icon_classical,
-            R.drawable.icon_country,
-            R.drawable.icon_decades,
-            R.drawable.icon_electronic,
-            R.drawable.icon_folk,
-            R.drawable.icon_international,
-            R.drawable.icon_jazz,
-            R.drawable.icon_misc,
-            R.drawable.icon_pop,
-            R.drawable.icon_randb,
-            R.drawable.icon_rap,
-            R.drawable.icon_reggae,
-            R.drawable.icon_rock,
-            R.drawable.icon_speech
-    };
     private TextView mItemTitle;
     private ImageView mItemIcon;
     private ItemChoiceManager mItemChoiceManager;
@@ -53,12 +36,7 @@ public class GridItemViewHolder extends RecyclerView.ViewHolder implements View.
 
         // populate the holder elements
         mItemTitle.setText(item.getTitle());
-
-        int num = mGenerator.nextInt(mIcons.length);
-        mItemIcon.setImageResource(mIcons[num]);
-
-        // TODO assign icon to category object
-        //mItemIcon.setImageResource(item.getIcon());
+        mItemIcon.setImageResource(item.getIcon());
 
     }
 

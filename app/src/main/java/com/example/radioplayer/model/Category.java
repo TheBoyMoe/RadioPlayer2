@@ -102,7 +102,8 @@ public class Category {
 
     @Override
     public String toString() {
-        return getTitle();
+        return String.format("Id: %d, Title: %s, Description: %s, Slug: %s, Ancestry: %s",
+                getId(), getTitle(), getDescription(), getSlug(), getAncestry());
     }
 
 
