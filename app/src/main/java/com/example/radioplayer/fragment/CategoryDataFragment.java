@@ -74,7 +74,7 @@ public class CategoryDataFragment extends BaseFragment{
     public void getCategoryList(CategoryThreadCompletionEvent event) {
         mIsStarted = false; // thread complete
         mCategoryList = event.getCategoryList();
-        Timber.i("Category data set updated, size: %d", mCategoryList.size());
+        Timber.i("Category thread complete, category data model updated");
         RadioPlayerApplication
                 .postToBus(new DataModelUpdateEvent(DataModelUpdateEvent.CATEGORY_MODEL_DATA));
     }

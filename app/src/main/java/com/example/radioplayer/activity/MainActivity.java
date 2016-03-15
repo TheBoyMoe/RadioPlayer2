@@ -17,6 +17,8 @@ import com.example.radioplayer.util.Constants;
 import com.example.radioplayer.util.Utils;
 import com.squareup.otto.Subscribe;
 
+import timber.log.Timber;
+
 public class MainActivity extends BaseActivity {
 
     private static final String CATEGORY_ID = "category_id";
@@ -34,8 +36,6 @@ public class MainActivity extends BaseActivity {
         setContentView(R.layout.activity_main);
         mCoordinatorLayout = (CoordinatorLayout) findViewById(R.id.coordinator_layout);
 
-        //Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        //setSupportActionBar(toolbar);
         setToolbarOnActivity(R.id.toolbar);
 
         // load the category data fragment - fragment retained on device rotation
@@ -48,15 +48,15 @@ public class MainActivity extends BaseActivity {
                     .commit();
         }
 
-        // load the category UI fragment
+        // category fragment inflated via xml
         mCategoryFragment =
-                (CategoryFragment) getFragmentManager().findFragmentById(R.id.category_fragment_container);
-        if(mCategoryFragment == null) {
-            mCategoryFragment = CategoryFragment.newInstance();
-            getFragmentManager().beginTransaction()
-                    .add(R.id.category_fragment_container, mCategoryFragment)
-                    .commit();
-        }
+                (CategoryFragment) getFragmentManager().findFragmentById(R.id.category_grid_fragment);
+//        if(mCategoryFragment == null) {
+//            mCategoryFragment = CategoryFragment.newInstance();
+//            getFragmentManager().beginTransaction()
+//                    .add(R.id.category_fragment_container, mCategoryFragment)
+//                    .commit();
+//        }
 
         // this call occurs before onCreate in CategoryDataFragment (and thus thread) are called - list empty
         if(mCategoryDataFragment != null && mCategoryFragment != null) {
@@ -100,6 +100,7 @@ public class MainActivity extends BaseActivity {
     @Subscribe
     public void getOnClickEvent(OnClickEvent event) {
 
+        // TODO add activity transitions - check Utility.launchActivity() in RadioPLayerUI
         // deal with clicks to category items
         if(event.getClickEvent().equals(OnClickEvent.CATEGORY_ON_CLICK_EVENT)) {
             mCategoryId = mCategoryDataFragment.getCategoryDataItem(event.getPosition()).getId();
@@ -141,6 +142,7 @@ public class MainActivity extends BaseActivity {
         String update = event.getDataModel();
         if(update.equals(DataModelUpdateEvent.CATEGORY_MODEL_DATA)) {
             // fetch the data model from the model fragment and update category fragment's data model
+            Timber.i("CategoryFragment: %s, CategoryDataFragment: %s", mCategoryFragment, mCategoryDataFragment);
             if(mCategoryDataFragment != null && mCategoryFragment != null) {
                 mCategoryFragment.setCategoryData(mCategoryDataFragment.getCategoryData());
             }
