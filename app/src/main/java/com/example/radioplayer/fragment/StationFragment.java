@@ -19,6 +19,7 @@ import com.example.radioplayer.event.MessageEvent;
 import com.example.radioplayer.event.StationThreadCompletionEvent;
 import com.example.radioplayer.model.Station;
 import com.example.radioplayer.network.StationThread;
+import com.example.radioplayer.util.Constants;
 import com.example.radioplayer.util.Utils;
 import com.squareup.otto.Subscribe;
 
@@ -38,6 +39,7 @@ public class StationFragment extends BaseFragment implements AdapterView.OnItemC
     private List<Station> mStationList = new ArrayList<>();
     private ListItemAdapter mAdapter;
     private Long mCategoryId;
+    private int mIcon;
     private boolean mIsStarted = false;
     //private ListView mListView;
     private SwipeRefreshLayout mRefreshLayout;
@@ -46,11 +48,12 @@ public class StationFragment extends BaseFragment implements AdapterView.OnItemC
 
     public StationFragment() {}
 
-    public static StationFragment newInstance(Long categoryId) {
-        // TODO add category icon to the bundle
+    public static StationFragment newInstance(Long categoryId, int icon) {
+        // add category icon to the bundle
         StationFragment fragment = new StationFragment();
         Bundle args = new Bundle();
-        args.putLong(BUNDLE_CATEGORY_ID, categoryId);
+        args.putLong(Constants.KEY_CATEGORY_ID, categoryId);
+        args.putInt(Constants.KEY_CATEGORY_ICON, icon);
         fragment.setArguments(args);
         return fragment;
     }
@@ -59,8 +62,8 @@ public class StationFragment extends BaseFragment implements AdapterView.OnItemC
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         // retrieve the categoryId & execute the background thread to download the station list
-        mCategoryId = getArguments().getLong(BUNDLE_CATEGORY_ID);
-        // TODO retrieve category icon
+        mCategoryId = getArguments().getLong(Constants.KEY_CATEGORY_ID);
+        mIcon = getArguments().getInt(Constants.KEY_CATEGORY_ICON);
     }
 
 
@@ -68,20 +71,13 @@ public class StationFragment extends BaseFragment implements AdapterView.OnItemC
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
-        // TODO delete this block
-//        View view = inflater.inflate(R.layout.station_list_view, container, false);
-//        mListView = (ListView) view.findViewById(R.id.list_view);
-//
-//        mAdapter = new ListItemAdapter(mStationList, getActivity());
-//        mListView.setAdapter(mAdapter);
-//        mListView.setOnItemClickListener(this);
-
         View view = inflater.inflate(R.layout.list_recycler, container, false);
         mRecyclerView = (RecyclerView) view.findViewById(R.id.recycler_view);
         mRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
         mRecyclerView.addItemDecoration(new CustomItemDecoration(getResources().getDimensionPixelSize(R.dimen.dimen_space)));
-        mAdapter = new ListItemAdapter(mStationList, getActivity());
+        mAdapter = new ListItemAdapter(mStationList, getActivity(), mIcon);
         mRecyclerView.setAdapter(mAdapter);
+
         // TODO impl pulldown to refresh
         // configure the pulldown icon
 //        mRefreshLayout = (SwipeRefreshLayout) view.findViewById(R.id.swipe_container);

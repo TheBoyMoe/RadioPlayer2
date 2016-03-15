@@ -1,13 +1,14 @@
 package com.example.radioplayer.fragment;
 
-import android.app.Fragment;
+
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
 
 import com.example.radioplayer.RadioPlayerApplication;
 import com.example.radioplayer.event.BaseEvent;
 import com.squareup.otto.Bus;
 
-public class BaseFragment extends Fragment{
+public class BaseFragment extends Fragment {
 
     public BaseFragment() {}
 

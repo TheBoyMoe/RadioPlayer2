@@ -3,6 +3,7 @@ package com.example.radioplayer.activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.CoordinatorLayout;
+import android.support.v4.app.Fragment;
 import android.view.View;
 
 import com.example.radioplayer.R;
@@ -13,20 +14,21 @@ import com.example.radioplayer.event.OnClickEvent;
 import com.example.radioplayer.fragment.CategoryDataFragment;
 import com.example.radioplayer.fragment.CategoryFragment;
 import com.example.radioplayer.fragment.StationFragment;
+import com.example.radioplayer.model.Category;
 import com.example.radioplayer.util.Constants;
 import com.example.radioplayer.util.Utils;
 import com.squareup.otto.Subscribe;
 
-import timber.log.Timber;
+import java.util.List;
 
 public class MainActivity extends BaseActivity {
 
-    private static final String CATEGORY_ID = "category_id";
     private CategoryDataFragment mCategoryDataFragment;
     private CategoryFragment mCategoryFragment;
     private StationFragment mStationFragment;
     private CoordinatorLayout mCoordinatorLayout;
     private Long mCategoryId;
+    private int mCategoryIcon;
     private boolean mDualPane;
 
 
@@ -40,17 +42,17 @@ public class MainActivity extends BaseActivity {
 
         // load the category data fragment - fragment retained on device rotation
         mCategoryDataFragment =
-                (CategoryDataFragment) getFragmentManager().findFragmentByTag(CategoryDataFragment.CATEGORY_DATA_FRAGMENT_TAG);
+                (CategoryDataFragment) getSupportFragmentManager().findFragmentByTag(CategoryDataFragment.CATEGORY_DATA_FRAGMENT_TAG);
         if(mCategoryDataFragment == null) {
             mCategoryDataFragment = CategoryDataFragment.newInstance();
-            getFragmentManager().beginTransaction()
+            getSupportFragmentManager().beginTransaction()
                     .add(mCategoryDataFragment, CategoryDataFragment.CATEGORY_DATA_FRAGMENT_TAG)
                     .commit();
         }
 
         // category fragment inflated via xml
         mCategoryFragment =
-                (CategoryFragment) getFragmentManager().findFragmentById(R.id.category_grid_fragment);
+                (CategoryFragment) getSupportFragmentManager().findFragmentById(R.id.category_grid_fragment);
 
         // this call occurs before onCreate in CategoryDataFragment (and thus thread) are called - list empty
         if(mCategoryDataFragment != null && mCategoryFragment != null) {
@@ -62,31 +64,49 @@ public class MainActivity extends BaseActivity {
         mDualPane = stationList != null && stationList.getVisibility() == View.VISIBLE;
 
         if(savedInstanceState != null) {
-            mCategoryId = savedInstanceState.getLong(CATEGORY_ID);
+            mCategoryId = savedInstanceState.getLong(Constants.KEY_CATEGORY_ID);
+            mCategoryIcon = savedInstanceState.getInt(Constants.KEY_CATEGORY_ICON);
+        } else {
+            if(mDualPane) {
+                // first time in - download the station list for the first category in the grid - Adult Contemporary
+                mCategoryId = 71l;
+                mCategoryIcon = R.drawable.icon_adult;
+            }
         }
 
-        // instantiate the station UI and data fragments on tablet device on device rotation
-        if(mDualPane && savedInstanceState != null) {
+        // instantiate the station UI on tablet device
+        if(mDualPane) {
+            // set the initial grid item to selected
+            List<Fragment> fragments = getSupportFragmentManager().getFragments();
+            for (int i = 0; i < fragments.size(); i++) {
+                Fragment fragment = fragments.get(i);
+                if(fragment instanceof CategoryFragment){
+                    CategoryFragment gridItemFragment = (CategoryFragment) fragment;
+                    gridItemFragment.isDualPane(true);
+                }
+            }
 
             // add the station UI fragment
-            mStationFragment = (StationFragment) getFragmentManager().findFragmentById(R.id.station_fragment_container);
+            mStationFragment = (StationFragment) getSupportFragmentManager().findFragmentById(R.id.station_fragment_container);
             if(mStationFragment == null) {
-                mStationFragment = StationFragment.newInstance(mCategoryId);
-                getFragmentManager().beginTransaction()
+                mStationFragment = StationFragment.newInstance(mCategoryId, mCategoryIcon);
+                getSupportFragmentManager().beginTransaction()
                         .add(R.id.station_fragment_container, mStationFragment)
                         .commit();
             }
-
         }
-
     }
+
+
 
 
     @Override
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
-        if(mCategoryId != null)
-            outState.putLong(CATEGORY_ID, mCategoryId);
+        if(mCategoryId != null) {
+            outState.putLong(Constants.KEY_CATEGORY_ID, mCategoryId);
+            outState.putInt(Constants.KEY_CATEGORY_ICON,mCategoryIcon);
+        }
     }
 
 
@@ -97,8 +117,10 @@ public class MainActivity extends BaseActivity {
         // TODO add activity transitions - check Utility.launchActivity() in RadioPLayerUI
         // deal with clicks to category items
         if(event.getClickEvent().equals(OnClickEvent.GRID_ITEM_CLICK_EVENT)) {
-            mCategoryId = mCategoryDataFragment.getCategoryDataItem(event.getPosition()).getId();
-            String categoryTitle = mCategoryDataFragment.getCategoryDataItem(event.getPosition()).getTitle();
+            Category item = mCategoryDataFragment.getCategoryDataItem(event.getPosition());
+            mCategoryId = item.getId();
+            mCategoryIcon = item.getIcon();
+            String categoryTitle = item.getTitle();
 
             // clear the data cache - downloading new category station list
             StationDataCache.getStationDataCache().clearDataCache();
@@ -106,15 +128,16 @@ public class MainActivity extends BaseActivity {
             // on tablets load the station list fragment
             if(mDualPane) {
                 // add the fragment if it does not already exist, otherwise replace it.
-                mStationFragment = StationFragment.newInstance(mCategoryId);
-                getFragmentManager().beginTransaction()
+                mStationFragment = StationFragment.newInstance(mCategoryId, mCategoryIcon);
+                getSupportFragmentManager().beginTransaction()
                         .replace(R.id.station_fragment_container, mStationFragment)
                         .commit();
             } else {
                 // on phone launch the station activity
                 Intent intent = new Intent(this, StationActivity.class);
-                intent.putExtra(StationActivity.EXTRA_CATEGORY_ID, mCategoryId);
-                intent.putExtra(StationActivity.EXTRA_CATEGORY_TITLE, categoryTitle);
+                intent.putExtra(Constants.KEY_CATEGORY_ID, mCategoryId);
+                intent.putExtra(Constants.KEY_CATEGORY_ICON, mCategoryIcon);
+                intent.putExtra(Constants.KEY_CATEGORY_TITLE, categoryTitle);
                 startActivity(intent);
             }
 
@@ -136,9 +159,14 @@ public class MainActivity extends BaseActivity {
         String update = event.getDataModel();
         if(update.equals(DataModelUpdateEvent.CATEGORY_MODEL_DATA)) {
             // fetch the data model from the model fragment and update category fragment's data model
-            Timber.i("CategoryFragment: %s, CategoryDataFragment: %s", mCategoryFragment, mCategoryDataFragment);
             if(mCategoryDataFragment != null && mCategoryFragment != null) {
                 mCategoryFragment.setCategoryData(mCategoryDataFragment.getCategoryData());
+
+                // detach and re-attach the fragment to ensure the items are always displayed when first launched
+//                getSupportFragmentManager().beginTransaction()
+//                    .detach(mCategoryFragment)
+//                    .attach(mCategoryFragment)
+//                    .commit();
             }
         }
     }

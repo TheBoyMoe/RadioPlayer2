@@ -37,7 +37,6 @@ public class GridItemViewHolder extends RecyclerView.ViewHolder implements View.
         // populate the holder elements
         mItemTitle.setText(item.getTitle());
         mItemIcon.setImageResource(item.getIcon());
-
     }
 
     @Override
@@ -47,7 +46,5 @@ public class GridItemViewHolder extends RecyclerView.ViewHolder implements View.
         // set the active state
         mItemChoiceManager.onClick(this);
     }
-
-
 
 }

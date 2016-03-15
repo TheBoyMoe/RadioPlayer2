@@ -26,8 +26,9 @@ public class StationActivity extends BaseActivity{
         setContentView(R.layout.activity_main_station);
         mCoordinatorLayout = (CoordinatorLayout) findViewById(R.id.coordinator_layout);
 
-        Long id = getIntent().getLongExtra(EXTRA_CATEGORY_ID, 0);
-        String title = getIntent().getStringExtra(EXTRA_CATEGORY_TITLE);
+        Long id = getIntent().getLongExtra(Constants.KEY_CATEGORY_ID, 0);
+        String title = getIntent().getStringExtra(Constants.KEY_CATEGORY_TITLE);
+        int icon = getIntent().getIntExtra(Constants.KEY_CATEGORY_ICON, R.drawable.icon_pop);
 
         setToolbarOnChildActivity(R.id.toolbar);
         if(getSupportActionBar() != null) {
@@ -36,10 +37,10 @@ public class StationActivity extends BaseActivity{
 
         // load the UI fragment
         mStationFragment =
-                (StationFragment) getFragmentManager().findFragmentById(R.id.station_fragment_container);
+                (StationFragment) getSupportFragmentManager().findFragmentById(R.id.station_fragment_container);
         if(mStationFragment == null) {
-            mStationFragment = StationFragment.newInstance(id);
-            getFragmentManager().beginTransaction()
+            mStationFragment = StationFragment.newInstance(id, icon);
+            getSupportFragmentManager().beginTransaction()
                     .add(R.id.station_fragment_container, mStationFragment)
                     .commit();
         }

@@ -24,13 +24,14 @@ public class ListItemViewHolder extends RecyclerView.ViewHolder implements View.
         mItemIcon = (ImageView) itemView.findViewById(R.id.item_icon);
     }
 
-    public void bindStationItem(Station item, Context context, int position) {
+    public void bindStationItem(Station item, Context context, int position, int icon) {
         mPosition = position;
         mItemTitle.setText(item.getName());
 
         // TODO use picasso to download and set icon
+
         // if not available use the category icon
-        mItemIcon.setImageResource(R.drawable.icon_pop);
+        mItemIcon.setImageResource(icon);
     }
 
     @Override

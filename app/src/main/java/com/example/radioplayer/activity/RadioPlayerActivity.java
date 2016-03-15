@@ -22,8 +22,8 @@ public class RadioPlayerActivity extends BaseActivity{
         int position = getIntent().getIntExtra(Constants.KEY_QUEUE_POSITION, 0);
 
         // add the radio player fragment
-        if(getFragmentManager().findFragmentById(R.id.radio_player_fragment_container) == null) {
-            getFragmentManager().beginTransaction()
+        if(getSupportFragmentManager().findFragmentById(R.id.radio_player_fragment_container) == null) {
+            getSupportFragmentManager().beginTransaction()
                     .add(R.id.radio_player_fragment_container, RadioPlayerFragment.newInstance(position))
                     .commit();
         }

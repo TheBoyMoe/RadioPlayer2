@@ -16,10 +16,12 @@ public class ListItemAdapter extends RecyclerView.Adapter<ListItemViewHolder>{
     private List<Station> mList;
     private Context mContext;
     private ListItemViewHolder mViewHolder;
+    private int mIcon;
 
-    public ListItemAdapter(List<Station> list, Context context) {
+    public ListItemAdapter(List<Station> list, Context context, int icon) {
         mList = list;
         mContext = context;
+        mIcon = icon;
     }
 
     @Override
@@ -33,7 +35,7 @@ public class ListItemAdapter extends RecyclerView.Adapter<ListItemViewHolder>{
     @Override
     public void onBindViewHolder(ListItemViewHolder holder, int position) {
         Station item = mList.get(position);
-        mViewHolder.bindStationItem(item, mContext, position);
+        mViewHolder.bindStationItem(item, mContext, position, mIcon);
     }
 
     @Override

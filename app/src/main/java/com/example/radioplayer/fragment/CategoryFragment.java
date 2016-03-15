@@ -21,8 +21,6 @@ import com.squareup.otto.Subscribe;
 import java.util.ArrayList;
 import java.util.List;
 
-import timber.log.Timber;
-
 public class CategoryFragment extends BaseFragment{
 
     private List<Category> mCategoryList = new ArrayList<>();
@@ -49,7 +47,7 @@ public class CategoryFragment extends BaseFragment{
     // populate the fragments arraylist and notify the adapter
     public void setCategoryData(ArrayList<Category> list) {
         mCategoryList.addAll(list);
-        Timber.i("Category data set: %s", mCategoryList);
+        mAdapter.notifyDataSetChanged();
     }
 
     @Nullable
@@ -100,52 +98,6 @@ public class CategoryFragment extends BaseFragment{
     public void isDualPane(boolean value) {
         mIsDualPane = value;
     }
-
-
-
-    // Custom ArrayAdapter and ViewHolder
-//    private class CategoryArrayAdapter extends ArrayAdapter<Category> {
-//
-//        public CategoryArrayAdapter(List<Category> list) {
-//            super(getActivity(), 0, list);
-//        }
-//
-//        @Override
-//        public View getView(int position, View convertView, ViewGroup parent) {
-//            CategoryViewHolder holder = null;
-//
-//            if(convertView == null) {
-//                convertView = getActivity().getLayoutInflater().inflate(R.layout.list_item, null);
-//                holder = (CategoryViewHolder) convertView.getTag();
-//            }
-//
-//            if(holder == null) {
-//                holder = new CategoryViewHolder(convertView);
-//                convertView.setTag(holder);
-//            }
-//
-//            // bind the category object to the holder
-//            holder.bindView(getItem(position));
-//
-//            return convertView;
-//        }
-//
-//    }
-
-
-//    private class CategoryViewHolder {
-//
-//        TextView titleText = null;
-//
-//        CategoryViewHolder(View row) {
-//            titleText = (TextView) row.findViewById(R.id.title_text);
-//        }
-//
-//        void bindView(Category category) {
-//            titleText.setText(category.getTitle());
-//        }
-//
-//    }
 
 
 }
