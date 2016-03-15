@@ -10,6 +10,7 @@ import com.example.radioplayer.R;
 import com.example.radioplayer.RadioPlayerApplication;
 import com.example.radioplayer.event.OnClickEvent;
 import com.example.radioplayer.model.Station;
+import com.squareup.picasso.Picasso;
 
 public class ListItemViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener{
 
@@ -28,10 +29,18 @@ public class ListItemViewHolder extends RecyclerView.ViewHolder implements View.
         mPosition = position;
         mItemTitle.setText(item.getName());
 
-        // TODO use picasso to download and set icon
-
-        // if not available use the category icon
-        mItemIcon.setImageResource(icon);
+        // use picasso to download and set icon
+        String url = item.getImage().getThumb().getUrl();
+        if (url == null || url.isEmpty()) {
+            // use the large image where thumb not available
+            item.getImage().getUrl();
+        }
+        Picasso.with(context)
+                .load(url)
+                .resize(60, 60)
+                .placeholder(icon)
+                .error(icon)
+                .into(mItemIcon);
     }
 
     @Override

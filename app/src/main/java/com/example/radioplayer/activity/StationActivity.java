@@ -14,9 +14,6 @@ import com.squareup.otto.Subscribe;
 
 public class StationActivity extends BaseActivity{
 
-    public static final String EXTRA_CATEGORY_ID = "category_id_extra";
-    public static final String EXTRA_CATEGORY_TITLE = "category_title";
-
     private StationFragment mStationFragment;
     private CoordinatorLayout mCoordinatorLayout;
 
@@ -52,7 +49,8 @@ public class StationActivity extends BaseActivity{
             int position = event.getPosition();
             Intent intent = new Intent(this, RadioPlayerActivity.class);
             intent.putExtra(Constants.KEY_QUEUE_POSITION, position);
-            startActivity(intent);
+            //startActivity(intent);
+            Utils.launchActivity(StationActivity.this, intent);
         }
     }
 

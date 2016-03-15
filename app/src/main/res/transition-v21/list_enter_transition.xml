@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <transitionSet xmlns:android="http://schemas.android.com/apk/res/android"
                android:transitionOrdering="together"
-               android:duration="400">
+               android:duration="800">
 
     <fade>
         <targets>
@@ -10,18 +10,17 @@
         </targets>
     </fade>
 
-    <!-- RE-ENABLE TRANSITIONS ONCE LAYOUT IN PLACE-->
 
-    <!--<slide android:slideEdge="right">-->
-        <!--<targets>-->
-            <!--<target android:targetId="@id/appbar" />-->
-        <!--</targets>-->
-    <!--</slide>-->
+    <slide android:slideEdge="right">
+        <targets>
+            <target android:targetId="@id/appbar" />
+        </targets>
+    </slide>
 
-    <!--<slide android:slideEdge="right">-->
-        <!--<targets>-->
-            <!--<target android:targetId="@id/container" />-->
-        <!--</targets>-->
-    <!--</slide>-->
+    <slide android:slideEdge="right">
+        <targets>
+            <target android:targetId="@id/container" />
+        </targets>
+    </slide>
 
 </transitionSet>

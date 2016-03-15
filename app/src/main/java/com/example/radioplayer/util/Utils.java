@@ -2,10 +2,13 @@ package com.example.radioplayer.util;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.IBinder;
 import android.support.design.widget.Snackbar;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.app.ActivityOptionsCompat;
 import android.support.v4.media.session.PlaybackStateCompat;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
@@ -80,6 +83,14 @@ public class Utils {
             }
         }
         return url;
+    }
+
+
+    // launch the transition on devices with api 21+, ignored on older devices
+    public static void launchActivity(Activity activity, Intent intent) {
+        @SuppressWarnings("unchecked")
+        ActivityOptionsCompat activityOptions = ActivityOptionsCompat.makeSceneTransitionAnimation(activity);
+        ActivityCompat.startActivity(activity, intent, activityOptions.toBundle());
     }
 
 

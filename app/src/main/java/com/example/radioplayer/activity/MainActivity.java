@@ -98,8 +98,6 @@ public class MainActivity extends BaseActivity {
     }
 
 
-
-
     @Override
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
@@ -114,7 +112,6 @@ public class MainActivity extends BaseActivity {
     @Subscribe
     public void getOnClickEvent(OnClickEvent event) {
 
-        // TODO add activity transitions - check Utility.launchActivity() in RadioPLayerUI
         // deal with clicks to category items
         if(event.getClickEvent().equals(OnClickEvent.GRID_ITEM_CLICK_EVENT)) {
             Category item = mCategoryDataFragment.getCategoryDataItem(event.getPosition());
@@ -138,16 +135,18 @@ public class MainActivity extends BaseActivity {
                 intent.putExtra(Constants.KEY_CATEGORY_ID, mCategoryId);
                 intent.putExtra(Constants.KEY_CATEGORY_ICON, mCategoryIcon);
                 intent.putExtra(Constants.KEY_CATEGORY_TITLE, categoryTitle);
-                startActivity(intent);
+                //startActivity(intent);
+                Utils.launchActivity(MainActivity.this, intent);
             }
 
         }
         // handle clicks to station items
         else if(event.getClickEvent().equals(OnClickEvent.LIST_ITEM_CLICK_EVENT)) {
-                int position = event.getPosition();
-                Intent intent = new Intent(this, RadioPlayerActivity.class);
-                intent.putExtra(Constants.KEY_QUEUE_POSITION, position);
-                startActivity(intent);
+            int position = event.getPosition();
+            Intent intent = new Intent(this, RadioPlayerActivity.class);
+            intent.putExtra(Constants.KEY_QUEUE_POSITION, position);
+            //startActivity(intent);
+            Utils.launchActivity(MainActivity.this, intent);
         }
 
     }
