@@ -17,9 +17,8 @@ import com.squareup.okhttp.Response;
 
 import java.io.BufferedReader;
 import java.io.Reader;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
+import java.util.LinkedList;
 
 import timber.log.Timber;
 
@@ -72,15 +71,15 @@ public class StationThread extends Thread{
 
                 Station[] data = new Gson().fromJson(reader, Station[].class);
                 if(data != null) {
-                    List<Station> stationList = Arrays.asList(data);
-                    Timber.i("Downloaded list size: %d", stationList.size());
+                    //List<Station> stationList = new LinkedList<>(Arrays.asList(data));
+                    //Timber.i("List: %s", stationList); // DEBUG
 
-                    if(stationList.size() == 0 && mPage > 1) {
+                    if(data.length == 0 && mPage > 1) {
                         Timber.i("END OF THE LINE!!!");
                         RadioPlayerApplication.postToBus(new StationThreadCompletionEvent(true, true));
                     } else {
                         // stash the station list in the data cache
-                        StationDataCache.getStationDataCache().setStationList(new ArrayList<>(stationList));
+                        StationDataCache.getStationDataCache().setStationList(new LinkedList<>(Arrays.asList(data)));
                         // let the station fragment know the station list has been updated
                         RadioPlayerApplication.postToBus(new StationThreadCompletionEvent(true, false));
                     }

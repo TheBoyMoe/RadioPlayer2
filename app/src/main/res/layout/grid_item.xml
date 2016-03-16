@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:gravity="center"
     android:background="@drawable/touch_selector"
     android:layout_width="match_parent"
@@ -8,6 +9,8 @@
 
     <ImageView
         android:id="@+id/item_icon"
+        tools:src="@drawable/icon_jazz"
+        android:contentDescription="@string/item_image_logo"
         android:tintMode="src_in"
         android:tint="@color/colorPrimary"
         android:layout_centerInParent="true"
@@ -17,7 +20,8 @@
 
     <TextView
         android:id="@+id/item_title"
-        style="@style/ItemTextStyle.Centered"
+        style="@style/ItemTextStyle.ItemTitle.Centered"
+        tools:text="Jazz"
         android:paddingTop="@dimen/dimen_small"
         android:layout_below="@id/item_icon"
         android:layout_width="match_parent"

@@ -42,4 +42,16 @@ public class ListItemAdapter extends RecyclerView.Adapter<ListItemViewHolder>{
     public int getItemCount() {
         return mList.size();
     }
+
+    public void clear() {
+        mList.clear();
+        notifyDataSetChanged();
+    }
+
+    public void addAll(List<Station> list) {
+        mList.addAll(list);
+        notifyDataSetChanged();
+    }
+
+
 }

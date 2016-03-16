@@ -1,9 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout
+<android.support.v4.widget.SwipeRefreshLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_centerInParent="true"
+    android:id="@+id/swipe_container"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
+
+    <!--<ProgressBar-->
+    <!--android:id="@+id/progress_bar"-->
+    <!--android:layout_gravity="center_horizontal"-->
+    <!--android:layout_width="50dp"-->
+    <!--android:layout_height="50dp"/>-->
 
     <android.support.v7.widget.RecyclerView
         android:id="@+id/recycler_view"
@@ -11,11 +17,4 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"/>
 
-    <!--<ProgressBar-->
-        <!--android:id="@+id/progress_bar"-->
-        <!--android:layout_gravity="center_horizontal"-->
-        <!--android:layout_width="50dp"-->
-        <!--android:layout_height="50dp"/>-->
-
-</FrameLayout>
-
+</android.support.v4.widget.SwipeRefreshLayout>

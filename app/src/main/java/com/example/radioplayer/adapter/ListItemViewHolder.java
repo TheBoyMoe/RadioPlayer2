@@ -15,6 +15,7 @@ import com.squareup.picasso.Picasso;
 public class ListItemViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener{
 
     private TextView mItemTitle;
+    private TextView mItemCountry;
     private ImageView mItemIcon;
     private int mPosition;
 
@@ -22,12 +23,14 @@ public class ListItemViewHolder extends RecyclerView.ViewHolder implements View.
         super(itemView);
         itemView.setOnClickListener(this);
         mItemTitle = (TextView) itemView.findViewById(R.id.item_title);
+        mItemCountry = (TextView) itemView.findViewById(R.id.item_country);
         mItemIcon = (ImageView) itemView.findViewById(R.id.item_icon);
     }
 
     public void bindStationItem(Station item, Context context, int position, int icon) {
         mPosition = position;
         mItemTitle.setText(item.getName());
+        mItemCountry.setText(item.getCountry());
 
         // use picasso to download and set icon
         String url = item.getImage().getThumb().getUrl();

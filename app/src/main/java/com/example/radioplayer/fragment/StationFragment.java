@@ -23,7 +23,7 @@ import com.example.radioplayer.util.Constants;
 import com.example.radioplayer.util.Utils;
 import com.squareup.otto.Subscribe;
 
-import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 import timber.log.Timber;
@@ -32,16 +32,15 @@ import timber.log.Timber;
  * References:
  * [1] https://guides.codepath.com/android/Implementing-Pull-to-Refresh-Guide
  */
-public class StationFragment extends BaseFragment implements AdapterView.OnItemClickListener{
+public class StationFragment extends BaseFragment{
 
-    public static final String BUNDLE_CATEGORY_ID = "category_id";
+    //public static final String BUNDLE_CATEGORY_ID = "category_id";
     private static final String BUNDLE_PAGE_NUMBER = "page_number";
-    private List<Station> mStationList = new ArrayList<>();
+    private List<Station> mStationList = new LinkedList<>();
     private ListItemAdapter mAdapter;
     private Long mCategoryId;
     private int mIcon;
     private boolean mIsStarted = false;
-    //private ListView mListView;
     private SwipeRefreshLayout mRefreshLayout;
     private int mPageCount = 0;
     private RecyclerView mRecyclerView;
@@ -78,15 +77,22 @@ public class StationFragment extends BaseFragment implements AdapterView.OnItemC
         mAdapter = new ListItemAdapter(mStationList, getActivity(), mIcon);
         mRecyclerView.setAdapter(mAdapter);
 
-        // TODO impl pulldown to refresh
         // configure the pulldown icon
-//        mRefreshLayout = (SwipeRefreshLayout) view.findViewById(R.id.swipe_container);
-//        mRefreshLayout.setColorSchemeResources(
-//                R.color.color_swipe_1,
-//                R.color.color_swipe_2,
-//                R.color.color_swipe_3,
-//                R.color.color_swipe_4
-//        );
+        mRefreshLayout = (SwipeRefreshLayout) view.findViewById(R.id.swipe_container);
+        mRefreshLayout.setColorSchemeResources(
+                R.color.color_swipe_1,
+                R.color.color_swipe_2,
+                R.color.color_swipe_3,
+                R.color.color_swipe_4
+        );
+
+        // setup refresh listener which triggers another data download
+        mRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                downloadStationData();
+            }
+        });
 
         if(savedInstanceState != null) {
             // retrieve page number from the bundle
@@ -98,22 +104,13 @@ public class StationFragment extends BaseFragment implements AdapterView.OnItemC
             downloadStationData();
         }
 
-        // TODO impl for recycler
-        // setup refresh listener which triggers another data download
-//        mRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
-//            @Override
-//            public void onRefresh() {
-//                downloadStationData();
-//            }
-//        });
-
         return view;
     }
 
 
-    @Override
+    //@Override - moved to the ItemViewHolder
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-        // TODO
+        // TODO impl reversing of list
         // reverse the item position clicked on to match the adapter
         //position = (mStationList.size() - 1) - position;
         //RadioPlayerApplication.postToBus(new OnClickEvent(OnClickEvent.LIST_ITEM_CLICK_EVENT, position));
@@ -145,11 +142,13 @@ public class StationFragment extends BaseFragment implements AdapterView.OnItemC
     public void refreshUi(StationThreadCompletionEvent event) {
         if(event.isThreadComplete()) {
             mIsStarted = false;
-            // TODO signal refreshing complete
-           // mRefreshLayout.setRefreshing(false);
             // refresh the station list with the most up-to-date list from the cache
-            mStationList.clear();
+            mAdapter.clear();
             setStationList();
+            Utils.showSnackbar(mRecyclerView, "Found " + mStationList.size() + " stations");
+
+            // signal refreshing complete
+            mRefreshLayout.setRefreshing(false);
         }
         if(event.isDownloadComplete()) {
             Utils.showSnackbar(mRecyclerView, "No more stations found, " + mStationList.size() + " found in total");
@@ -159,8 +158,10 @@ public class StationFragment extends BaseFragment implements AdapterView.OnItemC
 
     private void setStationList() {
         // pass a copy of the station list to the adapter
-        List<Station> list = new ArrayList<>(StationDataCache.getStationDataCache().getStationList());
-        mStationList.addAll(list);
+        List<Station> list = new LinkedList<>(StationDataCache.getStationDataCache().getStationList());
+        Timber.i("RetrievedList: %s", list); // DEBUG
+        mAdapter.addAll(list);
+        Timber.i("StationList: %s", mStationList); // DEBUG
         mAdapter.notifyDataSetChanged();
     }
 
