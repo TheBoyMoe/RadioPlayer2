@@ -2,13 +2,11 @@ package com.example.radioplayer.fragment;
 
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
 
 import com.example.radioplayer.R;
 import com.example.radioplayer.RadioPlayerApplication;
@@ -30,20 +28,23 @@ import timber.log.Timber;
 
 /**
  * References:
- * [1] https://guides.codepath.com/android/Implementing-Pull-to-Refresh-Guide
+ * [1] http://stackoverflow.com/questions/26543131/how-to-implement-endless-list-with-recyclerview
+ * [2] http://androhub.com/load-more-items-on-scroll-android/
+ *
  */
 public class StationFragment extends BaseFragment{
 
-    //public static final String BUNDLE_CATEGORY_ID = "category_id";
     private static final String BUNDLE_PAGE_NUMBER = "page_number";
     private List<Station> mStationList = new LinkedList<>();
     private ListItemAdapter mAdapter;
     private Long mCategoryId;
     private int mIcon;
     private boolean mIsStarted = false;
-    private SwipeRefreshLayout mRefreshLayout;
     private int mPageCount = 0;
     private RecyclerView mRecyclerView;
+
+    private int mPreviousTotal, mVisibleThreshold, mFirstVisibleItem, mVisibleItemCount, mTotalItemCount;
+    private boolean mLoading = true;
 
     public StationFragment() {}
 
@@ -72,27 +73,12 @@ public class StationFragment extends BaseFragment{
 
         View view = inflater.inflate(R.layout.list_recycler, container, false);
         mRecyclerView = (RecyclerView) view.findViewById(R.id.recycler_view);
-        mRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
+        final LinearLayoutManager layoutManager = new LinearLayoutManager(getActivity());
+        mRecyclerView.setLayoutManager(layoutManager);
         mRecyclerView.addItemDecoration(new CustomItemDecoration(getResources().getDimensionPixelSize(R.dimen.dimen_space)));
         mAdapter = new ListItemAdapter(mStationList, getActivity(), mIcon);
-        mRecyclerView.setAdapter(mAdapter);
-
-        // configure the pulldown icon
-        mRefreshLayout = (SwipeRefreshLayout) view.findViewById(R.id.swipe_container);
-        mRefreshLayout.setColorSchemeResources(
-                R.color.color_swipe_1,
-                R.color.color_swipe_2,
-                R.color.color_swipe_3,
-                R.color.color_swipe_4
-        );
-
-        // setup refresh listener which triggers another data download
-        mRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
-            @Override
-            public void onRefresh() {
-                downloadStationData();
-            }
-        });
+        if(isAdded())
+            mRecyclerView.setAdapter(mAdapter);
 
         if(savedInstanceState != null) {
             // retrieve page number from the bundle
@@ -104,16 +90,36 @@ public class StationFragment extends BaseFragment{
             downloadStationData();
         }
 
+        // Impl OnScrollListener
+        mRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
+                super.onScrolled(recyclerView, dx, dy);
+
+                mVisibleItemCount = mRecyclerView.getChildCount();
+                mTotalItemCount = layoutManager.getItemCount();
+                mFirstVisibleItem = layoutManager.findFirstVisibleItemPosition();
+
+                if (mLoading) {
+                    if (mTotalItemCount > mPreviousTotal) {
+                        mLoading = false;
+                        mPreviousTotal = mTotalItemCount;
+                    }
+                }
+                if (!mLoading && (mTotalItemCount - mVisibleItemCount)
+                        <= (mFirstVisibleItem + mVisibleThreshold)) {
+                    // End has been reached
+                    Timber.i("End of the line, %d stations found", mStationList.size());
+
+                    // Do something
+                    downloadStationData();
+                    mLoading = true;
+                }
+            }
+
+        });
+
         return view;
-    }
-
-
-    //@Override - moved to the ItemViewHolder
-    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-        // TODO impl reversing of list
-        // reverse the item position clicked on to match the adapter
-        //position = (mStationList.size() - 1) - position;
-        //RadioPlayerApplication.postToBus(new OnClickEvent(OnClickEvent.LIST_ITEM_CLICK_EVENT, position));
     }
 
 
@@ -145,13 +151,11 @@ public class StationFragment extends BaseFragment{
             // refresh the station list with the most up-to-date list from the cache
             mAdapter.clear();
             setStationList();
-            Utils.showSnackbar(mRecyclerView, "Found " + mStationList.size() + " stations");
-
-            // signal refreshing complete
-            mRefreshLayout.setRefreshing(false);
+            if(mStationList.size() > 20)
+                Utils.showSnackbar(mRecyclerView, "Found " + mStationList.size() + " stations so far");
         }
         if(event.isDownloadComplete()) {
-            Utils.showSnackbar(mRecyclerView, "No more stations found, " + mStationList.size() + " found in total");
+            Utils.showSnackbar(mRecyclerView, "Found, " + mStationList.size() + " stations in total");
         }
     }
 
@@ -159,9 +163,7 @@ public class StationFragment extends BaseFragment{
     private void setStationList() {
         // pass a copy of the station list to the adapter
         List<Station> list = new LinkedList<>(StationDataCache.getStationDataCache().getStationList());
-        Timber.i("RetrievedList: %s", list); // DEBUG
         mAdapter.addAll(list);
-        Timber.i("StationList: %s", mStationList); // DEBUG
         mAdapter.notifyDataSetChanged();
     }
 

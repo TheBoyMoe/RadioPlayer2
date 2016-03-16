@@ -15,7 +15,6 @@ public class ListItemAdapter extends RecyclerView.Adapter<ListItemViewHolder>{
 
     private List<Station> mList;
     private Context mContext;
-    private ListItemViewHolder mViewHolder;
     private int mIcon;
 
     public ListItemAdapter(List<Station> list, Context context, int icon) {
@@ -28,14 +27,13 @@ public class ListItemAdapter extends RecyclerView.Adapter<ListItemViewHolder>{
     public ListItemViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         LayoutInflater inflater = LayoutInflater.from(mContext);
         View view = inflater.inflate(R.layout.list_item, parent, false);
-        mViewHolder = new ListItemViewHolder(view);
-        return mViewHolder;
+        return new ListItemViewHolder(view);
     }
 
     @Override
     public void onBindViewHolder(ListItemViewHolder holder, int position) {
         Station item = mList.get(position);
-        mViewHolder.bindStationItem(item, mContext, position, mIcon);
+        holder.bindStationItem(item, mContext, position, mIcon);
     }
 
     @Override

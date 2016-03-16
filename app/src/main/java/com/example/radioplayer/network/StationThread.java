@@ -71,8 +71,6 @@ public class StationThread extends Thread{
 
                 Station[] data = new Gson().fromJson(reader, Station[].class);
                 if(data != null) {
-                    //List<Station> stationList = new LinkedList<>(Arrays.asList(data));
-                    //Timber.i("List: %s", stationList); // DEBUG
 
                     if(data.length == 0 && mPage > 1) {
                         Timber.i("END OF THE LINE!!!");

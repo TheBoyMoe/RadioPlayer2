@@ -31,7 +31,6 @@ public class StationDataCache {
 
     public void setStationList(LinkedList <Station> list) {
         mList.addAll(list); // add to the current cache
-        Timber.i("CachedList: %s", mList); // DEBUG
     }
 
     public Station getStation(int position) {
