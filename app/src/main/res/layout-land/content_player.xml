@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/container"
+    android:orientation="horizontal"
+    android:baselineAligned="false"
+    android:layout_marginTop="?attr/actionBarSize"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.example.radioplayerui.ui.activity.PlayerActivity">
+
+
+    <!-- Player controls -->
+    <RelativeLayout
+        android:id="@+id/player_controls"
+        android:layout_marginBottom="@dimen/dimen_large"
+        android:layout_marginLeft="@dimen/dimen_large"
+        android:layout_marginStart="@dimen/dimen_large"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent">
+
+        <ImageButton
+            android:id="@+id/action_prev_button"
+            android:tint="@color/colorPrimary"
+            android:tintMode="src_in"
+            android:src="@drawable/action_previous"
+            android:layout_centerHorizontal="true"
+            android:background="@android:color/transparent"
+            android:contentDescription="@string/previous_button_description"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+
+        <ImageButton
+            android:id="@+id/action_play_stop_button"
+            android:src="@drawable/action_play"
+            android:background="@drawable/oval_shape"
+            android:layout_centerVertical="true"
+            android:contentDescription="@string/play_button_description"
+            android:layout_width="@dimen/dimen_button_size"
+            android:layout_height="@dimen/dimen_button_size"/>
+
+        <ImageButton
+            android:id="@+id/action_next_button"
+            android:src="@drawable/action_next"
+            android:tint="@color/colorPrimary"
+            android:tintMode="src_in"
+            android:background="@android:color/transparent"
+            android:layout_centerHorizontal="true"
+            android:layout_alignParentBottom="true"
+            android:contentDescription="@string/next_button_description"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+
+    </RelativeLayout>
+
+
+    <RelativeLayout
+        android:layout_marginLeft="@dimen/dimen_xxlarge"
+        android:layout_width="match_parent"
+        android:layout_marginBottom="@dimen/dimen_large"
+        android:layout_height="match_parent">
+
+        <ImageView
+            android:id="@+id/player_background"
+            android:contentDescription="@string/player_content_description"
+            android:src="@drawable/icon_player_background"
+            android:tint="@color/colorPrimary"
+            android:tintMode="src_in"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="@dimen/dimen_large"
+            android:layout_width="156dp"
+            android:layout_height="156dp"/>
+
+        <ProgressBar
+            android:id="@+id/progress_bar"
+            android:indeterminateDrawable="@drawable/progress_bar_circular"
+            android:layout_centerInParent="true"
+            android:visibility="gone"
+            android:layout_width="@dimen/progress_bar_dimen"
+            android:layout_height="@dimen/progress_bar_dimen"/>
+
+        <!-- Equalizer Animation-->
+        <ImageView
+            android:id="@+id/equalizer"
+            android:contentDescription="@string/equalizer_content_description"
+            android:layout_marginBottom="@dimen/dimen_large"
+            android:layout_marginLeft="@dimen/dimen_normal"
+            android:layout_marginStart="@dimen/dimen_normal"
+            android:layout_marginRight="@dimen/dimen_large"
+            android:layout_marginEnd="@dimen/dimen_large"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"/>
+
+        <!-- Station title -->
+        <TextView
+            android:id="@+id/item_title"
+            tools:text="Radio Caroline"
+            style="@style/ItemTextStyle.PlayerTitle"
+            android:layout_alignParentBottom="true"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginRight="@dimen/dimen_large"
+            android:layout_marginEnd="@dimen/dimen_large"/>
+
+    </RelativeLayout>
+
+
+</LinearLayout>
+

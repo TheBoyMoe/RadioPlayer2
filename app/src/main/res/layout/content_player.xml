@@ -1,71 +1,115 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout
+<LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/container"
+    android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:paddingBottom="@dimen/dimen_large"
-    android:background="@color/colorScreenBackground"
-    app:layout_behavior="@string/appbar_scrolling_view_behavior"
-    tools:context="com.example.radioplayer.activity.RadioPlayerActivity"
-    tools:showIn="@layout/activity_player">
-
-    <ProgressBar
-        android:id="@+id/progress_bar"
-        android:indeterminateDrawable="@drawable/progress_bar_circular"
-        android:layout_centerInParent="true"
-        android:visibility="gone"
-        android:layout_width="@dimen/progress_bar_dimen"
-        android:layout_height="@dimen/progress_bar_dimen"/>
-
+    tools:context="com.example.radioplayerui.ui.activity.PlayerActivity">
 
     <RelativeLayout
-        android:id="@+id/player_controls"
-        android:layout_alignParentBottom="true"
-        android:layout_centerInParent="true"
-        android:layout_width="320dp"
-        android:layout_height="wrap_content">
+        android:layout_width="match_parent"
+        android:layout_marginTop="?attr/actionBarSize"
+        android:layout_height="0dp"
+        android:layout_weight="1">
 
-        <ImageButton
-            android:id="@+id/previous_button"
-            android:src="@drawable/action_previous"
-            android:background="@android:color/transparent"
-            android:contentDescription="@string/previous_button_description"
-            android:layout_width="@dimen/player_button_dimen"
-            android:layout_height="@dimen/player_button_dimen"/>
+        <ImageView
+            android:id="@+id/player_background"
+            android:contentDescription="@string/player_content_description"
+            android:src="@drawable/icon_player_background"
+            android:tint="@color/colorPrimary"
+            android:tintMode="src_in"
+            android:layout_width="256dp"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"/>
 
-        <ImageButton
-            android:id="@+id/play_stop_button"
-            android:src="@drawable/action_play"
-            android:background="@android:color/transparent"
+        <ProgressBar
+            android:id="@+id/progress_bar"
+            android:indeterminateDrawable="@drawable/progress_bar_circular"
             android:layout_centerInParent="true"
-            android:contentDescription="@string/play_button_description"
-            android:layout_width="@dimen/player_button_dimen"
-            android:layout_height="@dimen/player_button_dimen"/>
+            android:visibility="gone"
+            android:layout_width="@dimen/progress_bar_dimen"
+            android:layout_height="@dimen/progress_bar_dimen"/>
 
-        <ImageButton
-            android:id="@+id/next_button"
-            android:src="@drawable/action_next"
-            android:background="@android:color/transparent"
-            android:layout_alignParentRight="true"
-            android:layout_alignParentEnd="true"
-            android:contentDescription="@string/next_button_description"
-            android:layout_width="@dimen/player_button_dimen"
-            android:layout_height="@dimen/player_button_dimen"/>
+        <ImageView
+            android:id="@+id/equalizer"
+            android:contentDescription="@string/equalizer_content_description"
+            android:layout_width="match_parent"
+            android:layout_marginTop="@dimen/dimen_normal"
+            android:layout_marginBottom="@dimen/dimen_normal"
+            android:layout_marginLeft="@dimen/dimen_large"
+            android:layout_marginStart="@dimen/dimen_large"
+            android:layout_marginRight="@dimen/dimen_large"
+            android:layout_marginEnd="@dimen/dimen_large"
+            android:layout_height="match_parent"/>
 
     </RelativeLayout>
 
 
-    <TextView
-        android:id="@+id/station_title"
-        android:singleLine="true"
-        android:textSize="18sp"
-        tools:text="Yellow Star of Texas"
-        android:layout_above="@id/player_controls"
-        android:layout_centerHorizontal="true"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"/>
+    <LinearLayout
+        android:id="@+id/player_display"
+        android:orientation="vertical"
+        android:layout_margin="@dimen/dimen_normal"
+        android:padding="@dimen/dimen_normal"
+        android:layout_height="wrap_content"
+        android:layout_width="match_parent">
 
-</RelativeLayout>
+
+        <TextView
+            android:id="@+id/item_title"
+            tools:text="Radio Caroline"
+            style="@style/ItemTextStyle.PlayerTitle"
+            android:paddingLeft="@dimen/dimen_title_text_space"
+            android:paddingStart="@dimen/dimen_title_text_space"
+            android:paddingRight="@dimen/dimen_title_text_space"
+            android:paddingEnd="@dimen/dimen_title_text_space"
+            android:layout_marginBottom="@dimen/dimen_normal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"/>
+
+        <!-- Player controls -->
+        <RelativeLayout
+            android:id="@+id/player_controls"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <ImageButton
+                android:id="@+id/action_prev_button"
+                android:src="@drawable/action_previous"
+                android:tint="@color/colorPrimary"
+                android:tintMode="src_in"
+                android:background="@android:color/transparent"
+                android:layout_centerVertical="true"
+                android:contentDescription="@string/previous_button_description"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+
+            <ImageButton
+                android:id="@+id/action_play_stop_button"
+                android:src="@drawable/action_play"
+                android:background="@drawable/oval_shape"
+                android:layout_centerHorizontal="true"
+                android:contentDescription="@string/play_button_description"
+                android:layout_width="@dimen/dimen_button_size"
+                android:layout_height="@dimen/dimen_button_size"/>
+
+            <ImageButton
+                android:id="@+id/action_next_button"
+                android:src="@drawable/action_next"
+                android:tint="@color/colorPrimary"
+                android:tintMode="src_in"
+                android:background="@android:color/transparent"
+                android:layout_centerVertical="true"
+                android:layout_alignParentRight="true"
+                android:layout_alignParentEnd="true"
+                android:contentDescription="@string/next_button_description"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+
+        </RelativeLayout>
+
+    </LinearLayout>
+
+
+</LinearLayout>

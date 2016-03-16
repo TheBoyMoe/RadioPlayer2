@@ -15,7 +15,7 @@ import com.squareup.otto.Bus;
 
 public class BaseActivity extends AppCompatActivity{
 
-    private Toolbar mToolbar;
+    protected Toolbar mToolbar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,7 +43,7 @@ public class BaseActivity extends AppCompatActivity{
     }
 
     // setup the toolbar
-    private void setToolbar(int toolbarId) {
+    protected void setToolbar(int toolbarId) {
         mToolbar = (Toolbar) findViewById(toolbarId);
         setSupportActionBar(mToolbar);
     }

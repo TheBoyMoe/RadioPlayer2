@@ -93,17 +93,17 @@ public class RadioPlayerFragment extends BaseFragment implements
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         mView = inflater.inflate(R.layout.content_player, container, false);
 
-        mStationTitle = (TextView) mView.findViewById(R.id.station_title);
+        mStationTitle = (TextView) mView.findViewById(R.id.item_title);
         setStationTitle();
         mProgressBar = (ProgressBar) mView.findViewById(R.id.progress_bar);
         mProgressBar.setVisibility(View.GONE);
 
         // setup player controls elements
-        mPlayStopBtn = (ImageButton) mView.findViewById(R.id.play_stop_button);
+        mPlayStopBtn = (ImageButton) mView.findViewById(R.id.action_play_stop_button);
         mPlayStopBtn.setOnClickListener(this);
-        mPrevBtn = (ImageButton) mView.findViewById(R.id.previous_button);
+        mPrevBtn = (ImageButton) mView.findViewById(R.id.action_prev_button);
         mPrevBtn.setOnClickListener(this);
-        mNextBtn = (ImageButton) mView.findViewById(R.id.next_button);
+        mNextBtn = (ImageButton) mView.findViewById(R.id.action_next_button);
         mNextBtn.setOnClickListener(this);
 
         // hide prev/next btns to prevent use if starting from the first or last station
@@ -141,7 +141,7 @@ public class RadioPlayerFragment extends BaseFragment implements
         Timber.i("Current state onClick: %d", mState);
         switch(view.getId()) {
 
-            case R.id.play_stop_button:
+            case R.id.action_play_stop_button:
                 // start playback
                 if(mState == PlaybackStateCompat.STATE_NONE || mState == PlaybackStateCompat.STATE_STOPPED) {
                     Timber.i("Clicked play");
@@ -155,7 +155,7 @@ public class RadioPlayerFragment extends BaseFragment implements
                 }
                 break;
 
-            case R.id.previous_button:
+            case R.id.action_prev_button:
                 if(mState == PlaybackStateCompat.STATE_BUFFERING || mState == PlaybackStateCompat.STATE_PLAYING) {
                     mMediaController.getTransportControls().stop();
                 }
@@ -163,7 +163,7 @@ public class RadioPlayerFragment extends BaseFragment implements
                 mProgressBar.setVisibility(View.VISIBLE);
                 break;
 
-            case R.id.next_button:
+            case R.id.action_next_button:
                 if(mState == PlaybackStateCompat.STATE_BUFFERING || mState == PlaybackStateCompat.STATE_PLAYING) {
                     mMediaController.getTransportControls().stop();
                 }
