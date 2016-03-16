@@ -15,6 +15,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
@@ -43,9 +44,9 @@ public class RadioPlayerFragment extends BaseFragment implements
     private ImageButton mPlayStopBtn;
     private ImageButton mNextBtn;
     private ImageButton mPrevBtn;
+    private ImageView mPlayerBackground;
     private ProgressBar mProgressBar;
     private MediaControllerCompat mMediaController;
-    //private boolean mFirstTimeIn = true;
     private List<Station> mQueue;
     private int mQueuePosition;
     private int mState;
@@ -95,6 +96,8 @@ public class RadioPlayerFragment extends BaseFragment implements
 
         mStationTitle = (TextView) mView.findViewById(R.id.item_title);
         setStationTitle();
+
+        mPlayerBackground = (ImageView) mView.findViewById(R.id.player_background);
         mProgressBar = (ProgressBar) mView.findViewById(R.id.progress_bar);
         mProgressBar.setVisibility(View.GONE);
 
@@ -120,9 +123,12 @@ public class RadioPlayerFragment extends BaseFragment implements
             if(mState == PlaybackStateCompat.STATE_BUFFERING) {
                 mPlayStopBtn.setImageResource(R.drawable.action_stop);
                 mProgressBar.setVisibility(View.VISIBLE);
+                mPlayerBackground.setVisibility(View.INVISIBLE);
             }
-            if(mState == PlaybackStateCompat.STATE_PLAYING)
+            if(mState == PlaybackStateCompat.STATE_PLAYING) {
                 mPlayStopBtn.setImageResource(R.drawable.action_stop);
+                mPlayerBackground.setVisibility(View.INVISIBLE);
+            }
         }
 
         return mView;
@@ -161,6 +167,7 @@ public class RadioPlayerFragment extends BaseFragment implements
                 }
                 mMediaController.getTransportControls().skipToPrevious();
                 mProgressBar.setVisibility(View.VISIBLE);
+                mPlayerBackground.setVisibility(View.INVISIBLE);
                 break;
 
             case R.id.action_next_button:
@@ -169,6 +176,7 @@ public class RadioPlayerFragment extends BaseFragment implements
                 }
                 mMediaController.getTransportControls().skipToNext();
                 mProgressBar.setVisibility(View.VISIBLE);
+                mPlayerBackground.setVisibility(View.INVISIBLE);
                 break;
         }
     }
@@ -214,10 +222,12 @@ public class RadioPlayerFragment extends BaseFragment implements
                         case PlaybackStateCompat.STATE_NONE:
                         case PlaybackStateCompat.STATE_STOPPED:
                             mPlayStopBtn.setImageResource(R.drawable.action_play);
+                            mPlayerBackground.setVisibility(View.VISIBLE);
                             break;
                         case PlaybackStateCompat.STATE_BUFFERING:
                         case PlaybackStateCompat.STATE_PLAYING:
                             mPlayStopBtn.setImageResource(R.drawable.action_stop);
+                            mPlayerBackground.setVisibility(View.INVISIBLE);
                             break;
                     }
                 }
@@ -237,6 +247,7 @@ public class RadioPlayerFragment extends BaseFragment implements
             case PlaybackServiceEvent.ON_BECOMING_NOISY:
             case PlaybackServiceEvent.ON_NO_STREAM_FOUND:
                 mPlayStopBtn.setImageResource(R.drawable.action_play);
+                mPlayerBackground.setVisibility(View.VISIBLE);
             case PlaybackServiceEvent.ON_BUFFERING_COMPLETE:
                 mProgressBar.setVisibility(View.GONE);
                 displayMessage(message);
@@ -295,6 +306,7 @@ public class RadioPlayerFragment extends BaseFragment implements
 
                 // show the progress bar while buffering the audio stream
                 mProgressBar.setVisibility(View.VISIBLE);
+                mPlayerBackground.setVisibility(View.INVISIBLE);
 
             } else {
                 displayMessage(PlaybackServiceEvent.ON_NO_STREAM_FOUND);
