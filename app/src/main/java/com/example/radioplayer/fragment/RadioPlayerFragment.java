@@ -267,6 +267,7 @@ public class RadioPlayerFragment extends BaseFragment implements
                             break;
                         case PlaybackStateCompat.STATE_PLAYING:
                             Timber.i("State Playing");
+
                             mPlayStopBtn.setImageResource(R.drawable.action_stop);
                             if(mPlayerBackground.getVisibility() == View.VISIBLE)
                                 Utils.fadeViewElement(mPlayerBackground, View.INVISIBLE, 1, 0);

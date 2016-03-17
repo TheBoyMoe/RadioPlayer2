@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/splash_screen"
+    android:background="@color/colorPrimary"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+
+    <ImageView
+        android:layout_centerInParent="true"
+       android:src="@drawable/icon_player_background"
+        android:tint="@android:color/white"
+        android:tintMode="src_in"
+        android:contentDescription="@string/application_logo_description"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:minHeight="@dimen/dimen_app_logo_size"
+        android:minWidth="@dimen/dimen_app_logo_size"/>
+
+
+</RelativeLayout>

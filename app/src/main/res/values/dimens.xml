@@ -18,6 +18,7 @@
     <dimen name="dimen_title_text_space">12dp</dimen>
     <dimen name="dimen_max_player_width">320dp</dimen>
     <dimen name="dimen_max_player_height">480dp</dimen>
+    <dimen name="dimen_app_logo_size">120dp</dimen>
     <dimen name="dimen_divider">1dp</dimen>
     <dimen name="fab_margin">16dp</dimen>
     <dimen name="player_button_dimen">96dp</dimen>
