@@ -8,9 +8,7 @@
 
     <ImageView
         android:layout_centerInParent="true"
-       android:src="@drawable/icon_player_background"
-        android:tint="@android:color/white"
-        android:tintMode="src_in"
+        android:src="@drawable/icon_player_splash_screen"
         android:contentDescription="@string/application_logo_description"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
