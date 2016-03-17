@@ -56,7 +56,6 @@
 
         <activity
             android:name=".activity.SplashScreenActivity"
-            android:theme="@style/AppTheme.NoActionBar"
             android:configChanges="orientation|keyboardHidden|screenSize">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>

@@ -335,7 +335,6 @@ public class RadioPlayerFragment extends BaseFragment implements
                 Timber.i("Url: %s, station: %s", url, stn.getName());
                 Uri uri = Uri.parse(url);
                 Bundle extras = new Bundle();
-                //extras.putParcelable(PlaybackService.EXTRA_STATION, mStation); // PlaybackService can't unmarshall the station object
                 extras.putParcelable(PlaybackService.EXTRA_STATION_URI, uri);
                 extras.putString(PlaybackService.EXTRA_STATION_NAME, name);
                 extras.putString(PlaybackService.EXTRA_STATION_SLUG, slug);

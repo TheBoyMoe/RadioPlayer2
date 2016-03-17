@@ -13,6 +13,10 @@ public class SplashScreenActivity extends AppCompatActivity{
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_splash_screen);
 
+        if(getSupportActionBar() != null) {
+            getSupportActionBar().hide();
+        }
+
         // create a new thread that will launch the app after 2 secs
         Thread appLauncher = new Thread() {
             public void run() {
