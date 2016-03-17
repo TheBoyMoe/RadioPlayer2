@@ -20,6 +20,7 @@
             android:src="@drawable/icon_player_background"
             android:tint="@color/colorPrimary"
             android:tintMode="src_in"
+            android:visibility="invisible"
             android:layout_width="256dp"
             android:layout_height="wrap_content"
             android:layout_centerInParent="true"/>

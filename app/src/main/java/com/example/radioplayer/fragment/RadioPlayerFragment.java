@@ -37,6 +37,7 @@ public class RadioPlayerFragment extends BaseFragment implements
         View.OnClickListener, ServiceConnection{
 
     private static final String BUNDLE_STATE = "state";
+    private static final String BUNDLE_IS_PLAYING = "isPlaying";
     //private static final String BUNDLE_STATION_NAME = "name";
     //public static final String BUNDLE_QUEUE_POSITION = "queue_position";
 
@@ -53,6 +54,8 @@ public class RadioPlayerFragment extends BaseFragment implements
     private View mView;
     private Application mAppContext;
     private String mName;
+    private boolean mWasPlaying;
+
 
     public RadioPlayerFragment() {}
 
@@ -97,9 +100,9 @@ public class RadioPlayerFragment extends BaseFragment implements
         mStationTitle = (TextView) mView.findViewById(R.id.item_title);
         setStationTitle();
 
+        // invisible by default
         mPlayerBackground = (ImageView) mView.findViewById(R.id.player_background);
         mProgressBar = (ProgressBar) mView.findViewById(R.id.progress_bar);
-        mProgressBar.setVisibility(View.GONE);
 
         // setup player controls elements
         mPlayStopBtn = (ImageButton) mView.findViewById(R.id.action_play_stop_button);
@@ -122,13 +125,16 @@ public class RadioPlayerFragment extends BaseFragment implements
             mState = savedInstanceState.getInt(BUNDLE_STATE);
             if(mState == PlaybackStateCompat.STATE_BUFFERING) {
                 mPlayStopBtn.setImageResource(R.drawable.action_stop);
-                mProgressBar.setVisibility(View.VISIBLE);
                 mPlayerBackground.setVisibility(View.INVISIBLE);
+                mProgressBar.setVisibility(View.VISIBLE);
             }
-            if(mState == PlaybackStateCompat.STATE_PLAYING) {
+            else if(mState == PlaybackStateCompat.STATE_PLAYING) {
                 mPlayStopBtn.setImageResource(R.drawable.action_stop);
                 mPlayerBackground.setVisibility(View.INVISIBLE);
+            } else {
+                mPlayerBackground.setVisibility(View.VISIBLE);
             }
+
         }
 
         return mView;
@@ -164,19 +170,23 @@ public class RadioPlayerFragment extends BaseFragment implements
             case R.id.action_prev_button:
                 if(mState == PlaybackStateCompat.STATE_BUFFERING || mState == PlaybackStateCompat.STATE_PLAYING) {
                     mMediaController.getTransportControls().stop();
+                    mWasPlaying = true;
                 }
                 mMediaController.getTransportControls().skipToPrevious();
-                mProgressBar.setVisibility(View.VISIBLE);
-                mPlayerBackground.setVisibility(View.INVISIBLE);
+                if(mPlayerBackground.getVisibility() == View.VISIBLE)
+                    Utils.fadeViewElement(mPlayerBackground, View.INVISIBLE, 1, 0);
+                Utils.fadeViewElement(mProgressBar, View.VISIBLE, 0, 1);
                 break;
 
             case R.id.action_next_button:
                 if(mState == PlaybackStateCompat.STATE_BUFFERING || mState == PlaybackStateCompat.STATE_PLAYING) {
                     mMediaController.getTransportControls().stop();
+                    mWasPlaying = true;
                 }
                 mMediaController.getTransportControls().skipToNext();
-                mProgressBar.setVisibility(View.VISIBLE);
-                mPlayerBackground.setVisibility(View.INVISIBLE);
+                if(mPlayerBackground.getVisibility() == View.VISIBLE)
+                    Utils.fadeViewElement(mPlayerBackground, View.INVISIBLE, 1, 0);
+                Utils.fadeViewElement(mProgressBar, View.VISIBLE, 0, 1);
                 break;
         }
     }
@@ -222,12 +232,17 @@ public class RadioPlayerFragment extends BaseFragment implements
                         case PlaybackStateCompat.STATE_NONE:
                         case PlaybackStateCompat.STATE_STOPPED:
                             mPlayStopBtn.setImageResource(R.drawable.action_play);
-                            mPlayerBackground.setVisibility(View.VISIBLE);
+                            if(!mWasPlaying) {
+                                Utils.fadeViewElement(mPlayerBackground, View.VISIBLE, 0, 1);
+                            } else {
+                                mWasPlaying = false;
+                            }
                             break;
                         case PlaybackStateCompat.STATE_BUFFERING:
                         case PlaybackStateCompat.STATE_PLAYING:
                             mPlayStopBtn.setImageResource(R.drawable.action_stop);
-                            mPlayerBackground.setVisibility(View.INVISIBLE);
+                            if(mPlayerBackground.getVisibility() == View.VISIBLE)
+                                Utils.fadeViewElement(mPlayerBackground, View.INVISIBLE, 1, 0);
                             break;
                     }
                 }
@@ -247,9 +262,8 @@ public class RadioPlayerFragment extends BaseFragment implements
             case PlaybackServiceEvent.ON_BECOMING_NOISY:
             case PlaybackServiceEvent.ON_NO_STREAM_FOUND:
                 mPlayStopBtn.setImageResource(R.drawable.action_play);
-                mPlayerBackground.setVisibility(View.VISIBLE);
             case PlaybackServiceEvent.ON_BUFFERING_COMPLETE:
-                mProgressBar.setVisibility(View.GONE);
+                Utils.fadeViewElement(mProgressBar, View.GONE, 1, 0);
                 displayMessage(message);
                 break;
         }
@@ -305,14 +319,12 @@ public class RadioPlayerFragment extends BaseFragment implements
                 mMediaController.getTransportControls().playFromSearch("", extras);
 
                 // show the progress bar while buffering the audio stream
-                mProgressBar.setVisibility(View.VISIBLE);
-                mPlayerBackground.setVisibility(View.INVISIBLE);
+                Utils.fadeViewElement(mProgressBar, View.VISIBLE, 0, 1);
 
             } else {
                 displayMessage(PlaybackServiceEvent.ON_NO_STREAM_FOUND);
             }
         }
-
 
     }
 

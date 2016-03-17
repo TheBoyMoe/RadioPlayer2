@@ -11,6 +11,9 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.ActivityOptionsCompat;
 import android.support.v4.media.session.PlaybackStateCompat;
 import android.view.View;
+import android.view.animation.AccelerateInterpolator;
+import android.view.animation.AlphaAnimation;
+import android.view.animation.Animation;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Toast;
 
@@ -93,5 +96,23 @@ public class Utils {
         ActivityCompat.startActivity(activity, intent, activityOptions.toBundle());
     }
 
+
+    // fade the supplied view  element - either in or out
+    public static void fadeViewElement(final View view, final int visibility, int opacityStart, int opacityEnd) {
+
+        Animation fadeOut = new AlphaAnimation(opacityStart, opacityEnd);
+        fadeOut.setInterpolator(new AccelerateInterpolator());
+        fadeOut.setDuration(300);
+
+        fadeOut.setAnimationListener(new Animation.AnimationListener() {
+            public void onAnimationEnd(Animation animation) {
+                view.setVisibility(visibility);
+            }
+            public void onAnimationRepeat(Animation animation) {}
+            public void onAnimationStart(Animation animation) {}
+        });
+
+        view.startAnimation(fadeOut);
+    }
 
 }

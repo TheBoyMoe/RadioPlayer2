@@ -67,6 +67,7 @@
             android:src="@drawable/icon_player_background"
             android:tint="@color/colorPrimary"
             android:tintMode="src_in"
+            android:visibility="invisible"
             android:layout_centerHorizontal="true"
             android:layout_marginTop="@dimen/dimen_large"
             android:layout_width="156dp"
