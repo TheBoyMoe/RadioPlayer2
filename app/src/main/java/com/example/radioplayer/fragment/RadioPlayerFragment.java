@@ -4,6 +4,7 @@ import android.app.Application;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.graphics.drawable.AnimationDrawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.IBinder;
@@ -37,15 +38,14 @@ public class RadioPlayerFragment extends BaseFragment implements
         View.OnClickListener, ServiceConnection{
 
     private static final String BUNDLE_STATE = "state";
-    private static final String BUNDLE_IS_PLAYING = "isPlaying";
-    //private static final String BUNDLE_STATION_NAME = "name";
-    //public static final String BUNDLE_QUEUE_POSITION = "queue_position";
 
     private TextView mStationTitle;
     private ImageButton mPlayStopBtn;
     private ImageButton mNextBtn;
     private ImageButton mPrevBtn;
     private ImageView mPlayerBackground;
+    private ImageView mEqualizer;
+    private AnimationDrawable mEqualizerAnimation;
     private ProgressBar mProgressBar;
     private MediaControllerCompat mMediaController;
     private List<Station> mQueue;
@@ -55,6 +55,7 @@ public class RadioPlayerFragment extends BaseFragment implements
     private Application mAppContext;
     private String mName;
     private boolean mWasPlaying;
+    private boolean mFirstTimeIn;
 
 
     public RadioPlayerFragment() {}
@@ -100,9 +101,14 @@ public class RadioPlayerFragment extends BaseFragment implements
         mStationTitle = (TextView) mView.findViewById(R.id.item_title);
         setStationTitle();
 
-        // invisible by default
         mPlayerBackground = (ImageView) mView.findViewById(R.id.player_background);
         mProgressBar = (ProgressBar) mView.findViewById(R.id.progress_bar);
+
+        // create equalizer animation
+        mEqualizer = (ImageView) mView.findViewById(R.id.equalizer);
+        mEqualizer.setBackgroundResource(R.drawable.equalizer_anim);
+        mEqualizer.setVisibility(View.INVISIBLE);
+        mEqualizerAnimation = (AnimationDrawable) mEqualizer.getBackground();
 
         // setup player controls elements
         mPlayStopBtn = (ImageButton) mView.findViewById(R.id.action_play_stop_button);
@@ -122,19 +128,27 @@ public class RadioPlayerFragment extends BaseFragment implements
 
         // ensure that the correct play/stop btn state is shown on rotation
         if(savedInstanceState != null) {
+            mFirstTimeIn = false;
             mState = savedInstanceState.getInt(BUNDLE_STATE);
             if(mState == PlaybackStateCompat.STATE_BUFFERING) {
                 mPlayStopBtn.setImageResource(R.drawable.action_stop);
                 mPlayerBackground.setVisibility(View.INVISIBLE);
                 mProgressBar.setVisibility(View.VISIBLE);
+                mEqualizer.setVisibility(View.INVISIBLE);
             }
             else if(mState == PlaybackStateCompat.STATE_PLAYING) {
                 mPlayStopBtn.setImageResource(R.drawable.action_stop);
                 mPlayerBackground.setVisibility(View.INVISIBLE);
+                mEqualizer.setVisibility(View.VISIBLE);
+                mEqualizerAnimation.start();
             } else {
                 mPlayerBackground.setVisibility(View.VISIBLE);
+                mEqualizer.setVisibility(View.INVISIBLE);
             }
-
+        } else {
+            Timber.i("First time in");
+            mFirstTimeIn = true;
+            mProgressBar.setVisibility(View.VISIBLE);
         }
 
         return mView;
@@ -168,7 +182,9 @@ public class RadioPlayerFragment extends BaseFragment implements
                 break;
 
             case R.id.action_prev_button:
-                if(mState == PlaybackStateCompat.STATE_BUFFERING || mState == PlaybackStateCompat.STATE_PLAYING) {
+                if(mState == PlaybackStateCompat.STATE_BUFFERING
+                        || mState == PlaybackStateCompat.STATE_PLAYING
+                        || mState == PlaybackStateCompat.STATE_CONNECTING) {
                     mMediaController.getTransportControls().stop();
                     mWasPlaying = true;
                 }
@@ -179,7 +195,9 @@ public class RadioPlayerFragment extends BaseFragment implements
                 break;
 
             case R.id.action_next_button:
-                if(mState == PlaybackStateCompat.STATE_BUFFERING || mState == PlaybackStateCompat.STATE_PLAYING) {
+                if(mState == PlaybackStateCompat.STATE_BUFFERING
+                        || mState == PlaybackStateCompat.STATE_PLAYING
+                        || mState == PlaybackStateCompat.STATE_CONNECTING) {
                     mMediaController.getTransportControls().stop();
                     mWasPlaying = true;
                 }
@@ -203,7 +221,6 @@ public class RadioPlayerFragment extends BaseFragment implements
                 Timber.i("Launching PlayerActivity, connecting to PlaybackService, current mState: %d", mState);
 
                 // start playback as soon as player activity launches
-                Timber.i("First time in");
                 if(mState == PlaybackStateCompat.STATE_NONE || mState == PlaybackStateCompat.STATE_STOPPED) {
                     playFromStationUri();
                 } else if(mState == PlaybackStateCompat.STATE_BUFFERING || mState == PlaybackStateCompat.STATE_PLAYING){
@@ -231,18 +248,30 @@ public class RadioPlayerFragment extends BaseFragment implements
                     switch (state.getState()) {
                         case PlaybackStateCompat.STATE_NONE:
                         case PlaybackStateCompat.STATE_STOPPED:
+                            Timber.i("State Stopped/None");
                             mPlayStopBtn.setImageResource(R.drawable.action_play);
                             if(!mWasPlaying) {
                                 Utils.fadeViewElement(mPlayerBackground, View.VISIBLE, 0, 1);
                             } else {
                                 mWasPlaying = false;
                             }
+                            if(mEqualizer.getVisibility() == View.VISIBLE){
+                                Utils.fadeViewElement(mEqualizer, View.INVISIBLE, 1, 0);
+                                mEqualizerAnimation.stop();
+                            }
                             break;
                         case PlaybackStateCompat.STATE_BUFFERING:
+                            Timber.i("State Buffering");
+                            mPlayStopBtn.setImageResource(R.drawable.action_stop);
+                            Utils.fadeViewElement(mPlayerBackground, View.INVISIBLE, 0, 0);
+                            break;
                         case PlaybackStateCompat.STATE_PLAYING:
+                            Timber.i("State Playing");
                             mPlayStopBtn.setImageResource(R.drawable.action_stop);
                             if(mPlayerBackground.getVisibility() == View.VISIBLE)
                                 Utils.fadeViewElement(mPlayerBackground, View.INVISIBLE, 1, 0);
+                            mEqualizerAnimation.start();
+                            Utils.fadeViewElement(mEqualizer, View.VISIBLE, 0, 1);
                             break;
                     }
                 }

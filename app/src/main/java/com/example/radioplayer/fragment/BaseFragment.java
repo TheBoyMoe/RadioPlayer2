@@ -32,4 +32,5 @@ public class BaseFragment extends Fragment {
         return RadioPlayerApplication.getInstance().getBus();
     }
 
+
 }
