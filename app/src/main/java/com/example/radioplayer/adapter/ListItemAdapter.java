@@ -11,7 +11,7 @@ import com.example.radioplayer.model.Station;
 
 import java.util.List;
 
-public class ListItemAdapter extends RecyclerView.Adapter<ListItemViewHolder>{
+public class  ListItemAdapter extends RecyclerView.Adapter<ListItemViewHolder>{
 
     private List<Station> mList;
     private Context mContext;

@@ -49,7 +49,7 @@ public class BaseActivity extends AppCompatActivity{
     }
 
     // add the toolbar and set the overflow icon for 'older' apis
-    protected void setToolbarOnActivity(int toolbarId) {
+    protected void  setToolbarOnActivity(int toolbarId) {
         setToolbar(toolbarId);
         if(getSupportActionBar() != null) {
             if(Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {

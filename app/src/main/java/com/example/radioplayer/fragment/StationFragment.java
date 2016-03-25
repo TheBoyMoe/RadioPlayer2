@@ -32,6 +32,7 @@ import timber.log.Timber;
  * [2] http://androhub.com/load-more-items-on-scroll-android/
  *
  */
+
 public class StationFragment extends BaseFragment{
 
     private static final String BUNDLE_PAGE_NUMBER = "page_number";
@@ -111,7 +112,6 @@ public class StationFragment extends BaseFragment{
                     // End has been reached
                     Timber.i("End of the line, %d stations found", mStationList.size());
 
-                    // Do something
                     downloadStationData();
                     mLoading = true;
                 }
