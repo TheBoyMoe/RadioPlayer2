@@ -8,7 +8,7 @@ Pre-requisites
 --------------
 
 - Min Android SDK supported v16
-- Dirble api key, sign up here https://dirble.com/users/sign_up
+- Dirble api key, sign up here https://dirble.com/users/sign_up. Update the strings.xml file with the api key obtained.
 
 Getting Started
 ---------------
