@@ -9,7 +9,16 @@
     <dimen name="dimen_medium">24dp</dimen>
     <dimen name="dimen_large">32dp</dimen>
     <dimen name="dimen_xlarge">48dp</dimen>
-    <dimen name="dimen_xxlarge">64dp</dimen>
+    <dimen name="dimen_xxlarge">96dp</dimen>
+    <dimen name="dimen_grid_icon">40dp</dimen>
+    <dimen name="dimen_list_icon">60dp</dimen>
+    <dimen name="dimen_button_size">56dp</dimen>
+    <dimen name="dimen_space">12px</dimen>
+    <dimen name="dimen_column_width">160dp</dimen>
+    <dimen name="dimen_title_text_space">12dp</dimen>
+    <dimen name="dimen_max_player_width">320dp</dimen>
+    <dimen name="dimen_max_player_height">480dp</dimen>
+    <dimen name="dimen_app_logo_size">120dp</dimen>
     <dimen name="dimen_divider">1dp</dimen>
     <dimen name="fab_margin">16dp</dimen>
     <dimen name="player_button_dimen">96dp</dimen>

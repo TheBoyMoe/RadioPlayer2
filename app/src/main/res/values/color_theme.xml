@@ -9,6 +9,7 @@
     <color name="secondary_text">#727272</color>
     <color name="icons">#FFFFFF</color>
     <color name="divider">#B6B6B6</color>
+    <color name="screen_background">#FFEFEFEF</color>
 
     <!-- swipe colors -->
     <color name="md_pink_300">#f06292</color>
@@ -17,5 +18,9 @@
     <color name="md_pink_600">#d81b60</color>
     <color name="md_pink_700">#c2185b</color>
     <color name="md_pink_800">#ad1457</color>
+
+    <!-- Grid/List item colors -->
+    <color name="item_background">#FFFFFFFF</color>
+    <color name="item_background_activated">#FFEEEEEE</color>
 
 </resources>

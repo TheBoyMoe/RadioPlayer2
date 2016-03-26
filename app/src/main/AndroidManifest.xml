@@ -22,10 +22,6 @@
             android:label="@string/app_name"
             android:launchMode="singleTop"
             android:theme="@style/AppTheme.NoActionBar">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN"/>
-                <category android:name="android.intent.category.LAUNCHER"/>
-            </intent-filter>
         </activity>
 
         <activity
@@ -38,15 +34,15 @@
                 android:value="com.example.radioplayer.activity.MainActivity"/>
         </activity>
 
-        <activity
-            android:name=".activity.PlayerActivity"
-            android:label="@string/title_activity_player"
-            android:parentActivityName=".activity.StationActivity"
-            android:theme="@style/AppTheme.ThemeWhenLarge">
-            <meta-data
-                android:name="android.support.PARENT_ACTIVITY"
-                android:value="com.example.radioplayer.activity.StationActivity"/>
-        </activity>
+        <!--<activity-->
+            <!--android:name=".activity.PlayerActivity"-->
+            <!--android:label="@string/title_activity_player"-->
+            <!--android:parentActivityName=".activity.StationActivity"-->
+            <!--android:theme="@style/AppTheme.ThemeWhenLarge">-->
+            <!--<meta-data-->
+                <!--android:name="android.support.PARENT_ACTIVITY"-->
+                <!--android:value="com.example.radioplayer.activity.StationActivity"/>-->
+        <!--</activity>-->
 
         <activity
             android:name=".activity.RadioPlayerActivity"
@@ -56,6 +52,15 @@
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.example.radioplayer.activity.StationActivity"/>
+        </activity>
+
+        <activity
+            android:name=".activity.SplashScreenActivity"
+            android:configChanges="orientation|keyboardHidden|screenSize">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN"/>
+                <category android:name="android.intent.category.LAUNCHER"/>
+            </intent-filter>
         </activity>
 
 

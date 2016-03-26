@@ -7,7 +7,6 @@ import android.os.Looper;
 import com.example.radioplayer.event.BaseEvent;
 import com.facebook.stetho.Stetho;
 import com.facebook.stetho.timber.StethoTree;
-import com.squareup.leakcanary.LeakCanary;
 import com.squareup.otto.Bus;
 
 import timber.log.Timber;
@@ -45,11 +44,12 @@ public class RadioPlayerApplication extends Application{
                 }
             });
             // show logs in the Chrome browser console log via Stetho (works with Timber 3.0.1)
-            Timber.plant(new StethoTree()); // FIXME console log appearing in AS log
+            Timber.plant(new StethoTree());
         }
 
+        // FIXME RadioPlayerActivity causes a memory leak
         // detect memory leaks
-        LeakCanary.install(this);
+        // LeakCanary.install(this);
     }
 
     public Bus getBus() {

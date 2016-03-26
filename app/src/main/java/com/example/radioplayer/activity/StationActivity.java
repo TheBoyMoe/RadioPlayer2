@@ -3,22 +3,16 @@ package com.example.radioplayer.activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.CoordinatorLayout;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
 
 import com.example.radioplayer.R;
-import com.example.radioplayer.RadioPlayerApplication;
 import com.example.radioplayer.event.MessageEvent;
 import com.example.radioplayer.event.OnClickEvent;
-import com.example.radioplayer.fragment.RadioPlayerFragment;
 import com.example.radioplayer.fragment.StationFragment;
+import com.example.radioplayer.util.Constants;
 import com.example.radioplayer.util.Utils;
 import com.squareup.otto.Subscribe;
 
-public class StationActivity extends AppCompatActivity{
-
-    public static final String EXTRA_CATEGORY_ID = "category_id_extra";
-    public static final String EXTRA_CATEGORY_TITLE = "category_title";
+public class StationActivity extends BaseActivity{
 
     private StationFragment mStationFragment;
     private CoordinatorLayout mCoordinatorLayout;
@@ -29,46 +23,34 @@ public class StationActivity extends AppCompatActivity{
         setContentView(R.layout.activity_main_station);
         mCoordinatorLayout = (CoordinatorLayout) findViewById(R.id.coordinator_layout);
 
-        Long id = getIntent().getLongExtra(EXTRA_CATEGORY_ID, 0);
-        String title = getIntent().getStringExtra(EXTRA_CATEGORY_TITLE);
+        Long id = getIntent().getLongExtra(Constants.KEY_CATEGORY_ID, 0);
+        String title = getIntent().getStringExtra(Constants.KEY_CATEGORY_TITLE);
+        int icon = getIntent().getIntExtra(Constants.KEY_CATEGORY_ICON, R.drawable.icon_pop);
 
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
+        setToolbarOnChildActivity(R.id.toolbar);
         if(getSupportActionBar() != null) {
-            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-            getSupportActionBar().setTitle(title + " radio stations");
+            getSupportActionBar().setTitle(title + " stations");
         }
 
         // load the UI fragment
         mStationFragment =
-                (StationFragment) getFragmentManager().findFragmentById(R.id.station_fragment_container);
+                (StationFragment) getSupportFragmentManager().findFragmentById(R.id.station_fragment_container);
         if(mStationFragment == null) {
-            mStationFragment = StationFragment.newInstance(id);
-            getFragmentManager().beginTransaction()
+            mStationFragment = StationFragment.newInstance(id, icon);
+            getSupportFragmentManager().beginTransaction()
                     .add(R.id.station_fragment_container, mStationFragment)
                     .commit();
         }
     }
 
-    @Override
-    protected void onResume() {
-        super.onResume();
-        RadioPlayerApplication.getInstance().getBus().register(this);
-    }
-
-    @Override
-    protected void onPause() {
-        super.onPause();
-        RadioPlayerApplication.getInstance().getBus().unregister(this);
-    }
-
     @Subscribe
     public void getOnClickEvent(OnClickEvent event) {
-        if(event.getClickEvent().equals(OnClickEvent.STATION_ON_CLICK_EVENT)) {
+        if(event.getClickEvent().equals(OnClickEvent.LIST_ITEM_CLICK_EVENT)) {
             int position = event.getPosition();
             Intent intent = new Intent(this, RadioPlayerActivity.class);
-            intent.putExtra(RadioPlayerFragment.BUNDLE_QUEUE_POSITION, position);
-            startActivity(intent);
+            intent.putExtra(Constants.KEY_QUEUE_POSITION, position);
+            //startActivity(intent);
+            Utils.launchActivity(StationActivity.this, intent);
         }
     }
 

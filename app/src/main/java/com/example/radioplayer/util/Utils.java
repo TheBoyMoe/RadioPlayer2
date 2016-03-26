@@ -2,12 +2,18 @@ package com.example.radioplayer.util;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.IBinder;
 import android.support.design.widget.Snackbar;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.app.ActivityOptionsCompat;
 import android.support.v4.media.session.PlaybackStateCompat;
 import android.view.View;
+import android.view.animation.AccelerateInterpolator;
+import android.view.animation.AlphaAnimation;
+import android.view.animation.Animation;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Toast;
 
@@ -82,5 +88,31 @@ public class Utils {
         return url;
     }
 
+
+    // launch the transition on devices with api 21+, ignored on older devices
+    public static void launchActivity(Activity activity, Intent intent) {
+        @SuppressWarnings("unchecked")
+        ActivityOptionsCompat activityOptions = ActivityOptionsCompat.makeSceneTransitionAnimation(activity);
+        ActivityCompat.startActivity(activity, intent, activityOptions.toBundle());
+    }
+
+
+    // fade the supplied view  element - either in or out
+    public static void fadeViewElement(final View view, final int visibility, int opacityStart, int opacityEnd) {
+
+        Animation fadeOut = new AlphaAnimation(opacityStart, opacityEnd);
+        fadeOut.setInterpolator(new AccelerateInterpolator());
+        fadeOut.setDuration(300);
+
+        fadeOut.setAnimationListener(new Animation.AnimationListener() {
+            public void onAnimationEnd(Animation animation) {
+                view.setVisibility(visibility);
+            }
+            public void onAnimationRepeat(Animation animation) {}
+            public void onAnimationStart(Animation animation) {}
+        });
+
+        view.startAnimation(fadeOut);
+    }
 
 }

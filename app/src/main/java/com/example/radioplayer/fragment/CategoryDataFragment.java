@@ -6,6 +6,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.example.radioplayer.R;
 import com.example.radioplayer.RadioPlayerApplication;
 import com.example.radioplayer.event.CategoryThreadCompletionEvent;
 import com.example.radioplayer.event.DataModelUpdateEvent;
@@ -74,9 +75,49 @@ public class CategoryDataFragment extends BaseFragment{
     public void getCategoryList(CategoryThreadCompletionEvent event) {
         mIsStarted = false; // thread complete
         mCategoryList = event.getCategoryList();
-        Timber.i("Category data set updated, size: %d", mCategoryList.size());
+        setCategoryIcon();
+        Timber.i("Category thread complete, category data model updated");
         RadioPlayerApplication
                 .postToBus(new DataModelUpdateEvent(DataModelUpdateEvent.CATEGORY_MODEL_DATA));
+    }
+
+    private void setCategoryIcon() {
+        for (int i = 0; i < mCategoryList.size(); i++) {
+            Category item = mCategoryList.get(i);
+            String title = item.getTitle().toLowerCase();
+            if(title.contains("classical"))
+                item.setIcon(R.drawable.icon_classical);
+            else if(title.contains("adult"))
+                item.setIcon(R.drawable.icon_adult);
+            else if(title.contains("country"))
+                item.setIcon(R.drawable.icon_country);
+            else if(title.contains("decades"))
+                item.setIcon(R.drawable.icon_decades);
+            else if(title.contains("electronic"))
+                item.setIcon(R.drawable.icon_electronic);
+            else if(title.contains("folk"))
+                item.setIcon(R.drawable.icon_folk);
+            else if(title.contains("international"))
+                item.setIcon(R.drawable.icon_international);
+            else if(title.contains("jazz"))
+                item.setIcon(R.drawable.icon_jazz);
+            else if(title.contains("misc"))
+                item.setIcon(R.drawable.icon_misc);
+            else if(title.contains("pop"))
+                item.setIcon(R.drawable.icon_pop);
+            else if(title.contains("urban"))
+                item.setIcon(R.drawable.icon_randb);
+            else if(title.contains("rap"))
+                item.setIcon(R.drawable.icon_rap);
+            else if(title.contains("reggae"))
+                item.setIcon(R.drawable.icon_reggae);
+            else if(title.contains("rock"))
+                item.setIcon(R.drawable.icon_rock);
+            else if(title.contains("speech"))
+                item.setIcon(R.drawable.icon_speech);
+            else
+                item.setIcon(R.drawable.icon_pop);
+        }
     }
 
 }

@@ -2,7 +2,6 @@ package com.example.radioplayer.data;
 
 import com.example.radioplayer.model.Station;
 
-import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -15,7 +14,7 @@ import timber.log.Timber;
 public class StationDataCache {
 
     private static StationDataCache sDataCache;
-    private List<Station> mList = new ArrayList<>();
+    private List<Station> mList = new LinkedList<>();
 
     private StationDataCache() {}
 
@@ -30,7 +29,7 @@ public class StationDataCache {
         return mList;
     }
 
-    public void setStationList(ArrayList<Station> list) {
+    public void setStationList(LinkedList <Station> list) {
         mList.addAll(list); // add to the current cache
     }
 

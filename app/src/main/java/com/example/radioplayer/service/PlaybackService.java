@@ -19,6 +19,8 @@ import android.os.IBinder;
 import android.os.PowerManager;
 import android.os.RemoteException;
 import android.support.annotation.Nullable;
+import android.support.v4.content.ContextCompat;
+import android.support.v4.media.MediaDescriptionCompat;
 import android.support.v4.media.MediaMetadataCompat;
 import android.support.v4.media.session.MediaButtonReceiver;
 import android.support.v4.media.session.MediaControllerCompat;
@@ -28,7 +30,7 @@ import android.support.v7.app.NotificationCompat;
 
 import com.example.radioplayer.R;
 import com.example.radioplayer.RadioPlayerApplication;
-import com.example.radioplayer.activity.PlayerActivity;
+import com.example.radioplayer.activity.RadioPlayerActivity;
 import com.example.radioplayer.data.StationDataCache;
 import com.example.radioplayer.event.MessageEvent;
 import com.example.radioplayer.event.PlaybackServiceEvent;
@@ -74,6 +76,7 @@ public class PlaybackService extends Service implements
     private boolean mIsRegistered;
     private List<Station> mQueue;
     private int mQueuePosition;
+    private MediaMetadataCompat mMetadata;
 
     private final IntentFilter mNoisyIntentFilter =
             new IntentFilter(AudioManager.ACTION_AUDIO_BECOMING_NOISY);
@@ -204,7 +207,7 @@ public class PlaybackService extends Service implements
             Timber.i("Focus lost, stopping playback");
             mMediaPlayer.stop();
             updateSession(PlaybackStateCompat.STATE_STOPPED, PlaybackServiceEvent.ON_AUDIO_FOCUS_LOSS);
-            raiseNotification(); // FIXME ??
+            raiseNotification();
         }
     }
 
@@ -473,56 +476,51 @@ public class PlaybackService extends Service implements
     }
 
 
+
     private void raiseNotification() {
+
+        mMetadata = mMediaController.getMetadata();
+        MediaDescriptionCompat description = mMetadata.getDescription();
+
         // Set the expanded notification layout using MediaStyle
         NotificationCompat.MediaStyle style = new NotificationCompat.MediaStyle();
 
         // define the bitmap used for the notification
-        Bitmap bm = BitmapFactory.decodeResource(getResources(), R.mipmap.ic_launcher);
+        Bitmap bm = BitmapFactory.decodeResource(getResources(), R.drawable.icon_player_splash_screen);
 
         // build and display the notification
         NotificationCompat.Builder notification = new NotificationCompat.Builder(this);
         notification.setTicker(getString(R.string.notification_playing_stream));
-        notification.setSmallIcon(android.R.drawable.ic_media_play);
-        notification.setContentTitle("Dean Martin");
-        notification.setContentText("Kick in the Head");
+        notification.setSmallIcon(R.drawable.icon_notification);
+        notification.setContentTitle(description.getTitle());
+        notification.setContentText(description.getDescription());
+        notification.setColor(ContextCompat.getColor(this, R.color.colorPrimary));
         notification.setLargeIcon(bm);
         notification.setStyle(style);
 
         // define the action upon tapping the notification
-        Intent launchIntent = new Intent(getApplicationContext(), PlayerActivity.class);
+        Intent launchIntent = new Intent(getApplicationContext(), RadioPlayerActivity.class);
         launchIntent.setAction(ACTION_OPEN);
         PendingIntent returnToPlayer = PendingIntent.getActivity(this, 0, launchIntent, 0);
         notification.setContentIntent(returnToPlayer);
 
-        // TODO  -  wire up the action buttons
-        notification.addAction(generateAction
-                (android.R.drawable.ic_media_previous, "Previous", ACTION_PREV));
-
+        // TODO  -  wire up the action buttons - order in which you add the actions defines the order in which
+        // they appear on the notification
+        notification.addAction(generateAction(R.drawable.action_previous_white, "Previous", ACTION_PREV));
         int state = mPlaybackState.getState();
         if(state == PlaybackStateCompat.STATE_PLAYING)
-            // TODO change pause to stop icon
-            notification.addAction(generateAction
-                    (android.R.drawable.ic_media_pause, "Stop", ACTION_STOP));
+            notification.addAction(generateAction(R.drawable.action_stop, "Stop", ACTION_STOP));
         else
-            notification.addAction(generateAction
-                    (android.R.drawable.ic_media_play, "Play", ACTION_PLAY));
-
-        notification.addAction(generateAction
-                (android.R.drawable.ic_media_next, "Next", ACTION_NEXT));
-
-
+            notification.addAction(generateAction(R.drawable.action_play, "Play", ACTION_PLAY));
+        notification.addAction(generateAction(R.drawable.action_next_white, "Next", ACTION_NEXT));
 
         // TODO - dismiss the notification - ALSO kill the app
         Intent stopIntent = new Intent(getApplicationContext(), PlaybackService.class);
         stopIntent.setAction(ACTION_STOP);
-        PendingIntent removeNotification =
-                PendingIntent.getService(getApplicationContext(), 1, stopIntent, 0);
+        PendingIntent removeNotification = PendingIntent.getService(getApplicationContext(), 1, stopIntent, 0);
         notification.setDeleteIntent(removeNotification);
 
-
-        mNotificationManager =
-                (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+        mNotificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
         mNotificationManager.notify(NOTIFY_ID, notification.build());
 
         // stop the system killing the service - STOPS the notification from being dismissed
@@ -535,7 +533,5 @@ public class PlaybackService extends Service implements
         PendingIntent pendingIntent = PendingIntent.getService(getApplicationContext(), 1, intent, 0);
         return new android.support.v4.app.NotificationCompat.Action.Builder( icon, title, pendingIntent ).build();
     }
-
-
 
 }

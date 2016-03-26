@@ -58,7 +58,7 @@ public class PlayerActivity extends AppCompatActivity implements
         setContentView(R.layout.activity_player);
         mCoordinatorLayout = (CoordinatorLayout) findViewById(R.id.coordinator_layout);
         mProgressBar = (ProgressBar) findViewById(R.id.progress_bar);
-        mStationTitle = (TextView) findViewById(R.id.station_title);
+        mStationTitle = (TextView) findViewById(R.id.item_title);
 
         // set up the toolbar
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
@@ -69,11 +69,11 @@ public class PlayerActivity extends AppCompatActivity implements
         }
 
         // setup player controls elements
-        mPlayStopBtn = (ImageButton) findViewById(R.id.play_stop_button);
+        mPlayStopBtn = (ImageButton) findViewById(R.id.action_play_stop_button);
         mPlayStopBtn.setOnClickListener(this);
-        mPrevBtn = (ImageButton) findViewById(R.id.previous_button);
+        mPrevBtn = (ImageButton) findViewById(R.id.action_prev_button);
         mPrevBtn.setOnClickListener(this);
-        mNextBtn = (ImageButton) findViewById(R.id.next_button);
+        mNextBtn = (ImageButton) findViewById(R.id.action_next_button);
         mNextBtn.setOnClickListener(this);
 
         // retrieve the queue from the data cache
@@ -151,7 +151,7 @@ public class PlayerActivity extends AppCompatActivity implements
         Timber.i("Current state onClick: %d", mState);
         switch(view.getId()) {
 
-            case R.id.play_stop_button:
+            case R.id.action_play_stop_button:
                 // start playback
                 if(mState == PlaybackStateCompat.STATE_NONE || mState == PlaybackStateCompat.STATE_STOPPED) {
                     Timber.i("Clicked play");
@@ -165,7 +165,7 @@ public class PlayerActivity extends AppCompatActivity implements
                 }
                 break;
 
-            case R.id.previous_button:
+            case R.id.action_prev_button:
                 if(mState == PlaybackStateCompat.STATE_BUFFERING || mState == PlaybackStateCompat.STATE_PLAYING) {
                     mMediaController.getTransportControls().stop();
                 }
@@ -173,7 +173,7 @@ public class PlayerActivity extends AppCompatActivity implements
                 mProgressBar.setVisibility(View.VISIBLE);
                 break;
 
-            case R.id.next_button:
+            case R.id.action_next_button:
                 if(mState == PlaybackStateCompat.STATE_BUFFERING || mState == PlaybackStateCompat.STATE_PLAYING) {
                     mMediaController.getTransportControls().stop();
                 }

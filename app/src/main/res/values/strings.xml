@@ -7,4 +7,9 @@
     <string name="previous_button_description">Skip to the previous radio station</string>
     <string name="next_button_description">Skip to next radio station</string>
     <string name="notification_playing_stream">Playing audio stream</string>
+    <string name="item_image_logo">image logo</string>
+    <string name="list_recycler_progress_indicator">Updating station list...</string>
+    <string name="player_content_description">Radio player background image</string>
+    <string name="equalizer_content_description">Radio player equalizer animation</string>
+    <string name="application_logo_description">Application logo</string>
 </resources>

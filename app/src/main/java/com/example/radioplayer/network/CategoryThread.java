@@ -57,7 +57,6 @@ public class CategoryThread extends Thread{
                 if(array != null) {
                     List<Category> categories = new ArrayList<>(Arrays.asList(array));
                     RadioPlayerApplication.postToBus(new CategoryThreadCompletionEvent(categories));
-                    Timber.i("Category list: %s", categories.toString());
                 } else {
                     Timber.i("No results received from remote server");
                     // post message to bus - display snackbar to user

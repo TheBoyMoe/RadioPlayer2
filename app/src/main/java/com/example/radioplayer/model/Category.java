@@ -1,5 +1,7 @@
 package com.example.radioplayer.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 /**
  *
  * http://api.dirble.com/v2/categories/primary?token=xxxxx-xxxxxx-xxxxx
@@ -61,11 +63,14 @@ package com.example.radioplayer.model;
 
 public class Category {
 
+    // TODO method which looks at title and binds appropriate image
     private Long id;
     private String title;
     private String description;
     private String slug;
     private String ancestry;
+    @JsonIgnore
+    private Integer icon;
 
     public Long getId() {
         return id;
@@ -87,9 +92,18 @@ public class Category {
         return ancestry;
     }
 
+    public Integer getIcon() {
+        return icon;
+    }
+
+    public void setIcon(Integer icon) {
+        this.icon = icon;
+    }
+
     @Override
     public String toString() {
-        return getTitle();
+        return String.format("Id: %d, Title: %s, Description: %s, Slug: %s, Ancestry: %s",
+                getId(), getTitle(), getDescription(), getSlug(), getAncestry());
     }
 
 
