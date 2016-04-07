@@ -19,14 +19,9 @@ This sample uses the Gradle build system. To build this project, use the
 Screenshots
 -----------
 
-![Phone](screenshots/phone_interaction.gif "Interacting with the app on a phone")
+![Phone](screenshots/phone_preview.gif "Interacting with the app on a phone")
 
-![Tablet](screenshots/tablet_screenshot1.png "Tablet screenshot")
-
-![Tablet](screenshots/tablet_screenshot2.png "Tablet screenshot")
-
-![Tablet](screenshots/tablet_screenshot3.png "Tablet screenshot")
-
+![Phone](screenshots/tablet_preview_.gif "Interacting with the app on a tablet")
 
 Credit
 ------
