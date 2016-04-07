@@ -21,7 +21,7 @@ Screenshots
 
 ![Phone](screenshots/phone_preview.gif "Interacting with the app on a phone")
 
-![Phone](screenshots/tablet_preview_.gif "Interacting with the app on a tablet")
+![Tablet](screenshots/tablet_preview.gif "Interacting with the app on a tablet")
 
 Credit
 ------
